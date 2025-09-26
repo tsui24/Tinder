@@ -9,6 +9,7 @@ import com.tinder.tinder.jwt.JwtUtil;
 import com.tinder.tinder.model.Users;
 import com.tinder.tinder.repository.UserRepository;
 import com.tinder.tinder.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -42,13 +43,17 @@ public class AuthController {
 
         String token = jwtUtils.generateToken(user.getUsername(), user.getId());
         AuthResponse authResponse = new AuthResponse(token);
-
+        ApiResponse apiResponse = new ApiResponse<>();
+        apiResponse.setCode(200);
+        apiResponse.setMessage("Login successful");
+        apiResponse.setResult(authResponse);
         return ResponseEntity.ok(
-                new ApiResponse<>(200, "Login successful", authResponse)
+                apiResponse
         );
     }
     @PostMapping("/register")
-    public ApiResponse<String> register(@RequestBody RegisterRequest request) {
+    public ApiResponse<String> register(@RequestBody @Valid RegisterRequest request) {
+        userService.createUser(request);
         ApiResponse<String> response = new ApiResponse<>();
         response.setCode(200);
         response.setMessage("success");

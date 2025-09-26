@@ -1,12 +1,12 @@
 package com.tinder.tinder.controller;
 
+import com.tinder.tinder.dto.request.RegisterRequest;
 import com.tinder.tinder.dto.response.ApiResponse;
 import com.tinder.tinder.jwt.JwtUtil;
 import com.tinder.tinder.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/user")

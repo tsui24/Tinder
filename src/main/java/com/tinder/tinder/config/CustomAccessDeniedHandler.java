@@ -18,10 +18,10 @@ public class CustomAccessDeniedHandler implements  AccessDeniedHandler {
         response.setContentType("application/json");
         response.setStatus(HttpServletResponse.SC_FORBIDDEN); // 403
 
-        ApiResponse apiResponse = new ApiResponse(403,
-                "Bạn không có quyền truy cập vào tài nguyên này!",
-                null);
-
+        ApiResponse apiResponse = new ApiResponse();
+        apiResponse.setCode(403);
+        apiResponse.setMessage("Bạn không có quyền truy cập vào tài nguyên này!");
+        apiResponse.setResult(null);
         ObjectMapper objectMapper = new ObjectMapper();
         response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
     }

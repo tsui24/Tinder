@@ -2,7 +2,10 @@ package com.tinder.tinder.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.tinder.tinder.exception.ErrorException;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -22,11 +25,6 @@ public class ApiResponse<T> {
     public ApiResponse() {
     }
 
-    public ApiResponse(int code, String message, T result) {
-        this.code = code;
-        this.message = message;
-        this.result = result;
-    }
 
     public int getCode() {
         return code;
