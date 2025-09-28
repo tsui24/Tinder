@@ -41,7 +41,7 @@ public class AuthController {
             );
         }
 
-        String token = jwtUtils.generateToken(user.getUsername(), user.getId());
+        String token = jwtUtils.generateToken(user.getUsername(), user.getRole().name() ,user.getId());
         AuthResponse authResponse = new AuthResponse(token);
         ApiResponse apiResponse = new ApiResponse<>();
         apiResponse.setCode(200);

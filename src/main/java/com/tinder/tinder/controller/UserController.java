@@ -1,5 +1,6 @@
 package com.tinder.tinder.controller;
 
+import com.tinder.tinder.dto.request.CreateInforUser;
 import com.tinder.tinder.dto.request.RegisterRequest;
 import com.tinder.tinder.dto.response.ApiResponse;
 import com.tinder.tinder.jwt.JwtUtil;
@@ -50,4 +51,13 @@ public class UserController {
 //                    .body(Map.of("code", 401, "message", "Token không hợp lệ hoặc đã hết hạn"));
 //        }
 //    }
+    @PutMapping("create-infor-user")
+    public ApiResponse<String> createUser(@RequestBody @Valid CreateInforUser inforUser) {
+        ApiResponse apiResponse = new ApiResponse();
+        userService.updateInforUser(inforUser);
+        apiResponse.setMessage("Tạo thông tin người dùng thành công");
+        apiResponse.setCode(200);
+        apiResponse.setResult("");
+        return apiResponse;
+    }
 }

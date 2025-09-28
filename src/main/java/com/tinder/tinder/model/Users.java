@@ -6,6 +6,7 @@ import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -32,7 +33,7 @@ public class Users {
 
     private Integer interestedIn;
 
-    private LocalDateTime birthday;
+    private LocalDate birthday;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -114,11 +115,11 @@ public class Users {
         this.interestedIn = interestedIn;
     }
 
-    public LocalDateTime getBirthday() {
+    public LocalDate getBirthday() {
         return birthday;
     }
 
-    public void setBirthday(LocalDateTime birthday) {
+    public void setBirthday(LocalDate birthday) {
         this.birthday = birthday;
     }
 
