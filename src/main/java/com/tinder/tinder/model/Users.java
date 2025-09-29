@@ -1,13 +1,10 @@
 package com.tinder.tinder.model;
 
-import com.tinder.tinder.role.RoleName;
+import com.tinder.tinder.enums.RoleName;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "user")

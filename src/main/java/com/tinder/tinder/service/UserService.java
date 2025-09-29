@@ -6,16 +6,13 @@ import com.tinder.tinder.exception.AppException;
 import com.tinder.tinder.exception.ErrorException;
 import com.tinder.tinder.jwt.JwtUtil;
 import com.tinder.tinder.repository.UserRepository;
-import com.tinder.tinder.role.RoleName;
+import com.tinder.tinder.enums.RoleName;
 import com.tinder.tinder.service.impl.IUserService;
 import com.tinder.tinder.utils.UtilsService;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.net.http.HttpRequest;
 import java.util.Optional;
 import com.tinder.tinder.model.Users;
 @Service
