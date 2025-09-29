@@ -11,7 +11,9 @@ public enum ErrorException {
     INVALID_FORMAT_DATE(104, "Format date không hợp lệ, hãy sử dụng dd-MM-YYYY"),
     USERNAME_IS_EXISTED(105, "Tên đăng nhập đã tồn tại"),
     CONFIRM_PASS_NOT_VALID(106, "Mật khẩu xác nhận bị sai"),
-    WRONG_USERNAME_PASSWORD(107, "Sai tên đăng nhập hoặc mật khẩu"),;
+    WRONG_USERNAME_PASSWORD(107, "Sai tên đăng nhập hoặc mật khẩu"),
+    INVALID_OLD_PASSWORD(108, "Mật khẩu cũ không hợp lệ"),
+    NEW_PASSWORD_SAME_AS_OLD(109, "Mật khẩu mới giống với mật khẩu cũ");
     private int code;
     private String message;
 

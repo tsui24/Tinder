@@ -8,6 +8,7 @@ import com.tinder.tinder.jwt.JwtUtil;
 import com.tinder.tinder.repository.UserRepository;
 import com.tinder.tinder.role.RoleName;
 import com.tinder.tinder.service.impl.IUserService;
+import com.tinder.tinder.utils.UtilsService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -23,11 +24,13 @@ public class UserService implements IUserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final HttpServletRequest request;
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, HttpServletRequest request) {
+    private final UtilsService utilsService;
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, HttpServletRequest request, UtilsService utilsService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
         this.request = request;
+        this.utilsService = utilsService;
     }
     @Override
     public void createUser(RegisterRequest request) {
@@ -48,26 +51,54 @@ public class UserService implements IUserService {
 
     @Override
     public void updateInforUser(CreateInforUser inforUser) {
-        String authHeader = request.getHeader("Authorization");
-
-        if(authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
-            Long userId = jwtUtil.getUserIdFromToken(token);
-            Optional<Users> userOptional = userRepository.findById(userId);
-            if(userOptional.isPresent()) {
-                Users user = userOptional.get();
-                user.setFullName(inforUser.getFullName());
-                user.setEmail(inforUser.getEmail());
-                user.setAddressLat(inforUser.getAddressLat());
-                user.setAddressLon(inforUser.getAddressLon());
-                user.setBirthday(inforUser.getBirthday());
-                user.setGender(inforUser.getGender());
-                user.setInterestedIn(inforUser.getInterestedIn());
-                userRepository.save(user);
-            } else {
-                throw new AppException(ErrorException.USER_NOT_EXIST);
-            }
+        Long userId = utilsService.getUserIdFromToken();
+        Optional<Users> userOptional = userRepository.findById(userId);
+        if (userOptional.isPresent()) {
+            Users user = userOptional.get();
+            user.setFullName(inforUser.getFullName());
+            user.setEmail(inforUser.getEmail());
+            user.setAddressLat(inforUser.getAddressLat());
+            user.setAddressLon(inforUser.getAddressLon());
+            user.setBirthday(inforUser.getBirthday());
+            user.setGender(inforUser.getGender());
+            user.setInterestedIn(inforUser.getInterestedIn());
+            userRepository.save(user);
+        } else {
+            throw new AppException(ErrorException.USER_NOT_EXIST);
         }
+
+    }
+
+    @Override
+    public void updateAddressUser(String addressLat, String addressLon) {
+        Long userId = utilsService.getUserIdFromToken();
+        Optional<Users> userOptional = userRepository.findById(userId);
+        if (userOptional.isPresent()) {
+            Users user = userOptional.get();
+            user.setAddressLat(addressLat);
+            user.setAddressLon(addressLon);
+            userRepository.save(user);
+        } else {
+            throw new AppException(ErrorException.USER_NOT_EXIST);
+        }
+    }
+
+    @Override
+    public void changePassword(String oldPassword, String newPassword) {
+        Long userId = utilsService.getUserIdFromToken();
+        Optional<Users> userOptional = userRepository.findById(userId);
+        if (userOptional.isEmpty()) {
+            throw new AppException(ErrorException.USER_NOT_EXIST);
+        }
+        Users user = userOptional.get();
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new AppException(ErrorException.INVALID_OLD_PASSWORD);
+        }
+        if (passwordEncoder.matches(newPassword, user.getPassword())) {
+            throw new AppException(ErrorException.NEW_PASSWORD_SAME_AS_OLD);
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
     }
 
 //    @Override

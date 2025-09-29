@@ -60,4 +60,23 @@ public class UserController {
         apiResponse.setResult("");
         return apiResponse;
     }
+    @PutMapping("update-address")
+    public ApiResponse<String> updateAddress(@RequestParam String addressLon, String addressLat) {
+        ApiResponse apiResponse = new ApiResponse();
+        userService.updateAddressUser(addressLon, addressLat);
+        apiResponse.setMessage("Cập nhật vị trí của người dùng thành công");
+        apiResponse.setCode(200);
+        apiResponse.setResult("");
+        return apiResponse;
+    }
+
+    @PutMapping("update-password")
+    public ApiResponse<String> updatePassword(@RequestParam String oldPassword, String newPassword) {
+        ApiResponse apiResponse = new ApiResponse();
+        userService.changePassword(oldPassword, newPassword);
+        apiResponse.setMessage("Đổi mật khẩu thành công");
+        apiResponse.setCode(200);
+        apiResponse.setResult("");
+        return apiResponse;
+    }
 }
