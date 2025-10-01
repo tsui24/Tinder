@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "user")
@@ -35,6 +37,24 @@ public class Users {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private RoleName role;
+
+    @OneToMany(mappedBy = "users")
+    private List<Images> images = new ArrayList<>();
+
+    public Users(Long id, String username, String password, String fullName, String email, String addressLon, String addressLat, Integer gender, Integer interestedIn, LocalDate birthday, RoleName role, List<Images> images) {
+        this.id = id;
+        this.username = username;
+        this.password = password;
+        this.fullName = fullName;
+        this.email = email;
+        this.addressLon = addressLon;
+        this.addressLat = addressLat;
+        this.gender = gender;
+        this.interestedIn = interestedIn;
+        this.birthday = birthday;
+        this.role = role;
+        this.images = images;
+    }
 
     public Users() {
     }
@@ -126,5 +146,13 @@ public class Users {
 
     public void setRole(RoleName role) {
         this.role = role;
+    }
+
+    public List<Images> getImages() {
+        return images;
+    }
+
+    public void setImages(List<Images> images) {
+        this.images = images;
     }
 }
