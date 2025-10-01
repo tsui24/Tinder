@@ -6,7 +6,9 @@ import lombok.AllArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "user")
@@ -41,7 +43,15 @@ public class Users {
     @OneToMany(mappedBy = "users")
     private List<Images> images = new ArrayList<>();
 
-    public Users(Long id, String username, String password, String fullName, String email, String addressLon, String addressLat, Integer gender, Integer interestedIn, LocalDate birthday, RoleName role, List<Images> images) {
+    @ManyToMany
+    @JoinTable(
+            name = "user_interests",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "interest_id")
+    )
+    private Set<Interests> interests = new HashSet<>();
+
+    public Users(Long id, String username, String password, String fullName, String email, String addressLon, String addressLat, Integer gender, Integer interestedIn, LocalDate birthday, RoleName role, List<Images> images, Set<Interests> interests) {
         this.id = id;
         this.username = username;
         this.password = password;
@@ -54,6 +64,7 @@ public class Users {
         this.birthday = birthday;
         this.role = role;
         this.images = images;
+        this.interests = interests;
     }
 
     public Users() {
@@ -154,5 +165,13 @@ public class Users {
 
     public void setImages(List<Images> images) {
         this.images = images;
+    }
+
+    public Set<Interests> getInterests() {
+        return interests;
+    }
+
+    public void setInterests(Set<Interests> interests) {
+        this.interests = interests;
     }
 }
