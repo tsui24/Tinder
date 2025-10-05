@@ -5,6 +5,9 @@ import com.tinder.tinder.dto.request.RegisterRequest;
 import com.tinder.tinder.exception.AppException;
 import com.tinder.tinder.exception.ErrorException;
 import com.tinder.tinder.jwt.JwtUtil;
+import com.tinder.tinder.model.Images;
+import com.tinder.tinder.repository.ImagesRepository;
+import com.tinder.tinder.repository.InterestRepository;
 import com.tinder.tinder.repository.UserRepository;
 import com.tinder.tinder.enums.RoleName;
 import com.tinder.tinder.service.impl.IUserService;
@@ -20,17 +23,15 @@ import com.tinder.tinder.model.Users;
 public class UserService implements IUserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil;
-    private final HttpServletRequest request;
     private final UtilsService utilsService;
     private final ImagesService imagesService;
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, HttpServletRequest request, UtilsService utilsService, ImagesService imagesService) {
+    private final InterestRepository interestRepository;
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, HttpServletRequest request, UtilsService utilsService, ImagesService imagesService, InterestRepository interestRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-        this.jwtUtil = jwtUtil;
-        this.request = request;
         this.utilsService = utilsService;
         this.imagesService = imagesService;
+        this.interestRepository = interestRepository;
     }
     @Override
     public void createUser(RegisterRequest request) {
@@ -63,7 +64,7 @@ public class UserService implements IUserService {
             user.setGender(inforUser.getGender());
             user.setInterestedIn(inforUser.getInterestedIn());
             userRepository.save(user);
-            List<String> images = inforUser.getImages();
+            List<String> images = inforUser.getUrlImages();
             for (String image : images) {
                 imagesService.addImage(image);
             }

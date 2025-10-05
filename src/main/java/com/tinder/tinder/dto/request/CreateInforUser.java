@@ -37,12 +37,15 @@ public class CreateInforUser {
     @JsonFormat(pattern = "dd/MM/yyyy")
     private LocalDate birthday;
 
-    private List<String> images = new ArrayList<>();
+    @Size(min = 1, max = 6, message = "Bạn phải upload từ 1 đến 6 ảnh")
+    private List<String> urlImages;
 
+    @Size(min = 1, max = 5, message = "Bạn phải chọn từ 1 đến 5 sở thích")
+    private List<Long> interestIds;
     public CreateInforUser() {
     }
 
-    public CreateInforUser(String fullName, String email, String addressLon, String addressLat, Integer gender, Integer interestedIn, LocalDate birthday) {
+    public CreateInforUser(String fullName, String email, String addressLon, String addressLat, Integer gender, Integer interestedIn, LocalDate birthday, List<String> urlImages, List<Long> interestIds) {
         this.fullName = fullName;
         this.email = email;
         this.addressLon = addressLon;
@@ -50,6 +53,8 @@ public class CreateInforUser {
         this.gender = gender;
         this.interestedIn = interestedIn;
         this.birthday = birthday;
+        this.urlImages = urlImages;
+        this.interestIds = interestIds;
     }
 
     public @NotBlank(message = "Họ và tên không được để trống") @Size(max = 100, message = "Họ và tên không được vượt quá 100 ký tự") String getFullName() {
@@ -108,22 +113,19 @@ public class CreateInforUser {
         this.birthday = birthday;
     }
 
-    public List<String> getImages() {
-        return images;
+    public @Size(min = 1, max = 6, message = "Bạn phải upload từ 1 đến 6 ảnh") List<String> getUrlImages() {
+        return urlImages;
     }
 
-    public void setImages(List<String> images) {
-        this.images = images;
+    public void setUrlImages(@Size(min = 1, max = 6, message = "Bạn phải upload từ 1 đến 6 ảnh") List<String> urlImages) {
+        this.urlImages = urlImages;
     }
 
-    public CreateInforUser(String fullName, String email, String addressLon, String addressLat, Integer gender, Integer interestedIn, LocalDate birthday, List<String> images) {
-        this.fullName = fullName;
-        this.email = email;
-        this.addressLon = addressLon;
-        this.addressLat = addressLat;
-        this.gender = gender;
-        this.interestedIn = interestedIn;
-        this.birthday = birthday;
-        this.images = images;
+    public @Size(min = 1, max = 5, message = "Bạn phải chọn từ 1 đến 5 sở thích") List<Long> getInterestIds() {
+        return interestIds;
+    }
+
+    public void setInterestIds(@Size(min = 1, max = 5, message = "Bạn phải chọn từ 1 đến 5 sở thích") List<Long> interestIds) {
+        this.interestIds = interestIds;
     }
 }

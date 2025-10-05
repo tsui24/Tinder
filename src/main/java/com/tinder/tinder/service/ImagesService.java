@@ -10,6 +10,7 @@ import com.tinder.tinder.service.impl.IImagesService;
 import com.tinder.tinder.Utils.UtilsService;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
