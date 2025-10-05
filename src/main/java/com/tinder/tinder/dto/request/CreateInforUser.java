@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CreateInforUser {
     @NotBlank(message = "Họ và tên không được để trống")
@@ -34,6 +36,8 @@ public class CreateInforUser {
     @Past(message = "Ngày sinh phải ở trong quá khứ")
     @JsonFormat(pattern = "dd/MM/yyyy")
     private LocalDate birthday;
+
+    private List<String> images = new ArrayList<>();
 
     public CreateInforUser() {
     }
@@ -102,5 +106,24 @@ public class CreateInforUser {
 
     public void setBirthday(@NotNull(message = "Ngày sinh là bắt buộc") @Past(message = "Ngày sinh phải ở trong quá khứ") LocalDate birthday) {
         this.birthday = birthday;
+    }
+
+    public List<String> getImages() {
+        return images;
+    }
+
+    public void setImages(List<String> images) {
+        this.images = images;
+    }
+
+    public CreateInforUser(String fullName, String email, String addressLon, String addressLat, Integer gender, Integer interestedIn, LocalDate birthday, List<String> images) {
+        this.fullName = fullName;
+        this.email = email;
+        this.addressLon = addressLon;
+        this.addressLat = addressLat;
+        this.gender = gender;
+        this.interestedIn = interestedIn;
+        this.birthday = birthday;
+        this.images = images;
     }
 }

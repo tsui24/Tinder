@@ -7,7 +7,7 @@ import com.tinder.tinder.model.Users;
 import com.tinder.tinder.repository.ImagesRepository;
 import com.tinder.tinder.repository.UserRepository;
 import com.tinder.tinder.service.impl.IImagesService;
-import com.tinder.tinder.utils.UtilsService;
+import com.tinder.tinder.Utils.UtilsService;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;

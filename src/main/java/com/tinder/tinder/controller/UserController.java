@@ -7,6 +7,7 @@ import com.tinder.tinder.jwt.JwtUtil;
 import com.tinder.tinder.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -78,5 +79,14 @@ public class UserController {
         apiResponse.setCode(200);
         apiResponse.setResult("");
         return apiResponse;
+    }
+
+    @GetMapping("check-user")
+    public ApiResponse<Boolean> checkUser() {
+        ApiResponse response = new ApiResponse<>();
+        Boolean result = userService.checkUser();
+        response.setCode(200);
+        response.setResult(result);
+        return response;
     }
 }

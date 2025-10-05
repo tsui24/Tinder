@@ -8,11 +8,12 @@ import com.tinder.tinder.jwt.JwtUtil;
 import com.tinder.tinder.repository.UserRepository;
 import com.tinder.tinder.enums.RoleName;
 import com.tinder.tinder.service.impl.IUserService;
-import com.tinder.tinder.utils.UtilsService;
+import com.tinder.tinder.Utils.UtilsService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 import com.tinder.tinder.model.Users;
 @Service
@@ -22,12 +23,14 @@ public class UserService implements IUserService {
     private final JwtUtil jwtUtil;
     private final HttpServletRequest request;
     private final UtilsService utilsService;
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, HttpServletRequest request, UtilsService utilsService) {
+    private final ImagesService imagesService;
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, HttpServletRequest request, UtilsService utilsService, ImagesService imagesService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
         this.request = request;
         this.utilsService = utilsService;
+        this.imagesService = imagesService;
     }
     @Override
     public void createUser(RegisterRequest request) {
@@ -60,6 +63,10 @@ public class UserService implements IUserService {
             user.setGender(inforUser.getGender());
             user.setInterestedIn(inforUser.getInterestedIn());
             userRepository.save(user);
+            List<String> images = inforUser.getImages();
+            for (String image : images) {
+                imagesService.addImage(image);
+            }
         } else {
             throw new AppException(ErrorException.USER_NOT_EXIST);
         }
@@ -96,6 +103,20 @@ public class UserService implements IUserService {
         }
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
+    }
+
+    @Override
+    public Boolean checkUser() {
+        Long userID = utilsService.getUserIdFromToken();
+        Optional<Users> userOptional = userRepository.findById(userID);
+        if (userOptional.isPresent()) {
+            Users user = userOptional.get();
+            if(user.getEmail() != null && !user.getEmail().isEmpty()) {
+                return true;
+            }
+            return false;
+        }
+        return false;
     }
 
 //    @Override
