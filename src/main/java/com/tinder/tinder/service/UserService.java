@@ -5,6 +5,9 @@ import com.tinder.tinder.dto.request.RegisterRequest;
 import com.tinder.tinder.exception.AppException;
 import com.tinder.tinder.exception.ErrorException;
 import com.tinder.tinder.jwt.JwtUtil;
+import com.tinder.tinder.model.Images;
+import com.tinder.tinder.repository.ImagesRepository;
+import com.tinder.tinder.repository.InterestRepository;
 import com.tinder.tinder.repository.UserRepository;
 import com.tinder.tinder.enums.RoleName;
 import com.tinder.tinder.service.impl.IUserService;
@@ -13,21 +16,22 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 import com.tinder.tinder.model.Users;
 @Service
 public class UserService implements IUserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil;
-    private final HttpServletRequest request;
     private final UtilsService utilsService;
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, HttpServletRequest request, UtilsService utilsService) {
+    private final ImagesRepository imagesRepository;
+    private final InterestRepository interestRepository;
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, UtilsService utilsService, ImagesRepository imagesRepository, InterestRepository interestRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-        this.jwtUtil = jwtUtil;
-        this.request = request;
         this.utilsService = utilsService;
+        this.imagesRepository = imagesRepository;
+        this.interestRepository = interestRepository;
     }
     @Override
     public void createUser(RegisterRequest request) {

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class CreateInforUser {
     @NotBlank(message = "Họ và tên không được để trống")
@@ -35,10 +36,15 @@ public class CreateInforUser {
     @JsonFormat(pattern = "dd/MM/yyyy")
     private LocalDate birthday;
 
+    @Size(min = 1, max = 6, message = "Bạn phải upload từ 1 đến 6 ảnh")
+    private List<String> urlImages;
+
+    @Size(min = 1, max = 5, message = "Bạn phải chọn từ 1 đến 5 sở thích")
+    private List<Long> interestIds;
     public CreateInforUser() {
     }
 
-    public CreateInforUser(String fullName, String email, String addressLon, String addressLat, Integer gender, Integer interestedIn, LocalDate birthday) {
+    public CreateInforUser(String fullName, String email, String addressLon, String addressLat, Integer gender, Integer interestedIn, LocalDate birthday, List<String> urlImages, List<Long> interestIds) {
         this.fullName = fullName;
         this.email = email;
         this.addressLon = addressLon;
@@ -46,6 +52,8 @@ public class CreateInforUser {
         this.gender = gender;
         this.interestedIn = interestedIn;
         this.birthday = birthday;
+        this.urlImages = urlImages;
+        this.interestIds = interestIds;
     }
 
     public @NotBlank(message = "Họ và tên không được để trống") @Size(max = 100, message = "Họ và tên không được vượt quá 100 ký tự") String getFullName() {
@@ -102,5 +110,21 @@ public class CreateInforUser {
 
     public void setBirthday(@NotNull(message = "Ngày sinh là bắt buộc") @Past(message = "Ngày sinh phải ở trong quá khứ") LocalDate birthday) {
         this.birthday = birthday;
+    }
+
+    public @Size(min = 1, max = 6, message = "Bạn phải upload từ 1 đến 6 ảnh") List<String> getUrlImages() {
+        return urlImages;
+    }
+
+    public void setUrlImages(@Size(min = 1, max = 6, message = "Bạn phải upload từ 1 đến 6 ảnh") List<String> urlImages) {
+        this.urlImages = urlImages;
+    }
+
+    public @Size(min = 1, max = 5, message = "Bạn phải chọn từ 1 đến 5 sở thích") List<Long> getInterestIds() {
+        return interestIds;
+    }
+
+    public void setInterestIds(@Size(min = 1, max = 5, message = "Bạn phải chọn từ 1 đến 5 sở thích") List<Long> interestIds) {
+        this.interestIds = interestIds;
     }
 }
