@@ -1,4 +1,4 @@
-package com.tinder.tinder.utils;
+package com.tinder.tinder.Utils;
 
 import com.tinder.tinder.jwt.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;

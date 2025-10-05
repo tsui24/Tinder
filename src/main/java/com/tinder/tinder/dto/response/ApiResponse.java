@@ -9,7 +9,7 @@ import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Builder
+//@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ApiResponse<T> {
     int code;

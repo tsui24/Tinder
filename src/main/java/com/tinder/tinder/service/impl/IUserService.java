@@ -10,4 +10,5 @@ public interface IUserService {
     void updateInforUser(CreateInforUser inforUser);
     void updateAddressUser(String addressLat, String addressLon);
     void changePassword(String oldPassword, String newPassword);
+    Boolean checkUser();
 }
