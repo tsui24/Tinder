@@ -35,6 +35,8 @@ public class Users {
 
     private LocalDate birthday;
 
+    private String location;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private RoleName role;
@@ -48,9 +50,9 @@ public class Users {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "interest_id")
     )
-    private Set<Interests> interests = new HashSet<>();
+    private List<Interests> interests = new ArrayList<>();
 
-    public Users(Long id, String username, String password, String fullName, String email, String addressLon, String addressLat, Integer gender, Integer interestedIn, LocalDate birthday, RoleName role, List<Images> images, Set<Interests> interests) {
+    public Users(Long id, String username, String password, String fullName, String email, String addressLon, String addressLat, Integer gender, Integer interestedIn, LocalDate birthday, RoleName role, List<Images> images, List<Interests> interests, String location) {
         this.id = id;
         this.username = username;
         this.password = password;
@@ -64,6 +66,7 @@ public class Users {
         this.role = role;
         this.images = images;
         this.interests = interests;
+        this.location = location;
     }
 
     public Users() {
@@ -166,11 +169,19 @@ public class Users {
         this.images = images;
     }
 
-    public Set<Interests> getInterests() {
+    public List<Interests> getInterests() {
         return interests;
     }
 
-    public void setInterests(Set<Interests> interests) {
+    public void setInterests(List<Interests> interests) {
         this.interests = interests;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
     }
 }

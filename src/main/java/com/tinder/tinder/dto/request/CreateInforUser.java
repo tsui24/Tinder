@@ -38,14 +38,14 @@ public class CreateInforUser {
     private LocalDate birthday;
 
     @Size(min = 1, max = 6, message = "Bạn phải upload từ 1 đến 6 ảnh")
-    private List<String> urlImages;
+    private List<String> images;
 
     @Size(min = 1, max = 5, message = "Bạn phải chọn từ 1 đến 5 sở thích")
     private List<Long> interestIds;
     public CreateInforUser() {
     }
 
-    public CreateInforUser(String fullName, String email, String addressLon, String addressLat, Integer gender, Integer interestedIn, LocalDate birthday, List<String> urlImages, List<Long> interestIds) {
+    public CreateInforUser(String fullName, String email, String addressLon, String addressLat, Integer gender, Integer interestedIn, LocalDate birthday, List<String> images, List<Long> interestIds) {
         this.fullName = fullName;
         this.email = email;
         this.addressLon = addressLon;
@@ -53,7 +53,7 @@ public class CreateInforUser {
         this.gender = gender;
         this.interestedIn = interestedIn;
         this.birthday = birthday;
-        this.urlImages = urlImages;
+        this.images = images;
         this.interestIds = interestIds;
     }
 
@@ -113,12 +113,12 @@ public class CreateInforUser {
         this.birthday = birthday;
     }
 
-    public @Size(min = 1, max = 6, message = "Bạn phải upload từ 1 đến 6 ảnh") List<String> getUrlImages() {
-        return urlImages;
+    public @Size(min = 1, max = 6, message = "Bạn phải upload từ 1 đến 6 ảnh") List<String> getImages() {
+        return images;
     }
 
-    public void setUrlImages(@Size(min = 1, max = 6, message = "Bạn phải upload từ 1 đến 6 ảnh") List<String> urlImages) {
-        this.urlImages = urlImages;
+    public void setImages(@Size(min = 1, max = 6, message = "Bạn phải upload từ 1 đến 6 ảnh") List<String> urlImages) {
+        this.images = urlImages;
     }
 
     public @Size(min = 1, max = 5, message = "Bạn phải chọn từ 1 đến 5 sở thích") List<Long> getInterestIds() {

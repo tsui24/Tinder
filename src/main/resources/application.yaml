@@ -3,3 +3,8 @@ spring:
     name: tinder-chat-service
   profiles:
     active: dev
+
+graphhopper:
+  api:
+    key: YOUR_API_KEY_HERE
+    url: https://graphhopper.com/api/1/route
