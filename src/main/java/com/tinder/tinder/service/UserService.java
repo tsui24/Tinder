@@ -6,18 +6,23 @@ import com.tinder.tinder.exception.AppException;
 import com.tinder.tinder.exception.ErrorException;
 import com.tinder.tinder.jwt.JwtUtil;
 import com.tinder.tinder.model.Images;
+import com.tinder.tinder.model.Interests;
 import com.tinder.tinder.repository.ImagesRepository;
 import com.tinder.tinder.repository.InterestRepository;
 import com.tinder.tinder.repository.UserRepository;
 import com.tinder.tinder.enums.RoleName;
 import com.tinder.tinder.service.impl.IUserService;
 import com.tinder.tinder.Utils.UtilsService;
+import com.tinder.tinder.utils.OSMService;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+
 import com.tinder.tinder.model.Users;
 @Service
 public class UserService implements IUserService {
@@ -26,13 +31,17 @@ public class UserService implements IUserService {
     private final UtilsService utilsService;
     private final ImagesService imagesService;
     private final InterestRepository interestRepository;
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, HttpServletRequest request, UtilsService utilsService, ImagesService imagesService, InterestRepository interestRepository) {
+    private final OSMService osmService;
+
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, UtilsService utilsService, ImagesService imagesService, InterestRepository interestRepository, OSMService osmService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.utilsService = utilsService;
         this.imagesService = imagesService;
         this.interestRepository = interestRepository;
+        this.osmService = osmService;
     }
+
     @Override
     public void createUser(RegisterRequest request) {
         Optional<Users> userOptional = Optional.ofNullable((userRepository.findByUsername(request.getUsername())));
@@ -63,8 +72,11 @@ public class UserService implements IUserService {
             user.setBirthday(inforUser.getBirthday());
             user.setGender(inforUser.getGender());
             user.setInterestedIn(inforUser.getInterestedIn());
+//            List<Interests> interestsList = interestRepository.findAllById(inforUser.getInterestIds());
+//            user.setInterests(interestsList);
+            user.setLocation(osmService.getLocationName(inforUser.getAddressLat(), inforUser.getAddressLon()));
+            List<String> images = inforUser.getImages();
             userRepository.save(user);
-            List<String> images = inforUser.getUrlImages();
             for (String image : images) {
                 imagesService.addImage(image);
             }
