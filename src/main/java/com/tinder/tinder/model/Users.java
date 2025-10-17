@@ -1,5 +1,6 @@
 package com.tinder.tinder.model;
 
+import com.tinder.tinder.dto.response.UserMatchResult;
 import com.tinder.tinder.enums.RoleName;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -11,6 +12,19 @@ import java.util.List;
 import java.util.Set;
 
 @Entity
+@SqlResultSetMapping(
+        name = "UserMatchMapping",
+        classes = @ConstructorResult(
+                targetClass = UserMatchResult.class,
+                columns = {
+                        @ColumnResult(name = "userId", type = Long.class),
+                        @ColumnResult(name = "fullName", type = String.class),
+                        @ColumnResult(name = "age", type = Integer.class),
+                        @ColumnResult(name = "location", type = String.class),
+                        @ColumnResult(name = "distanceKm", type = Double.class)
+                }
+        )
+)
 @Table(name = "user")
 public class Users {
     @Id

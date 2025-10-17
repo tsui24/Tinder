@@ -28,7 +28,7 @@ public class GraphHopperService {
      * @param lon2  Kinh độ điểm 2
      * @return Khoảng cách tính bằng mét (hoặc -1 nếu lỗi)
      */
-    public Mono<Double> getDistance(double lat1, double lon1, double lat2, double lon2) {
+    public Mono<Double> getDistance(String lat1, String lon1, String lat2, String lon2) {
         return graphClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/route")
