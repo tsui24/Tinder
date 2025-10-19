@@ -12,7 +12,7 @@ import com.tinder.tinder.repository.UserRepository;
 import com.tinder.tinder.service.impl.ILikeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import com.tinder.tinder.Utils.UtilsService;
+import com.tinder.tinder.utils.UtilsService;
 
 import java.util.Optional;
 

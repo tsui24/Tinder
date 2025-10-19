@@ -103,6 +103,8 @@ public class UserController {
         apiResponse.setCode(200);
         apiResponse.setResult("");
         apiResponse.setMessage("Update user success");
+        return apiResponse;
+    }
 
     @GetMapping("get-user-suitable")
     public ApiResponse<List<UserMatchResult>> getUserNearBy(@RequestParam double distanceKm){
