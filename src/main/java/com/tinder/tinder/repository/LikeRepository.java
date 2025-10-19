@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface LikeRepository extends JpaRepository<Likes, Long> {
@@ -20,5 +21,7 @@ public interface LikeRepository extends JpaRepository<Likes, Long> {
     @Query("DELETE FROM Likes l WHERE l.createdAt < :time")
     int deleteOldLikes(LocalDateTime time);
 
-    boolean existsByFromUserAndToUser(Users fromUser, Users toUser);
+    Optional<Likes> findByFromUserAndToUser(Users fromUser, Users toUser);
+
+    List<Likes> findAllByFromUser(Users fromUser);
 }

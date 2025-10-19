@@ -114,6 +114,7 @@ public class UserController {
             apiResponse.setCode(HttpStatus.NO_CONTENT.value());
             apiResponse.setMessage("Không có người dùng phù hợp với bạn, vui lòng điều chỉnh khoảng cách");
             apiResponse.setResult(null);
+            return apiResponse;
         }
         apiResponse.setCode(200);
         apiResponse.setResult(results);
