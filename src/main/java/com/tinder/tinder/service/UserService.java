@@ -29,10 +29,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -55,7 +52,7 @@ public class UserService implements IUserService {
 
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, UtilsService utilsService,
                        ImagesService imagesService, InterestRepository interestRepository, OSMService osmService,
-                       GraphHopperService graphHopperService, ImagesRepository imagesRepository, LikeRepository likeRepository, MatchRepository matchRepository) {
+                       GraphHopperService graphHopperService, ImagesRepository imagesRepository, LikeRepository likeRepository, MatchRepository matchRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.utilsService = utilsService;
