@@ -58,7 +58,7 @@ public class JwtFilter extends OncePerRequestFilter {
             return;
         }
 
-        try {
+//        try {
             String token = authHeader.substring(7);
             Claims claims = extractClaims(token);
             String username = claims.getSubject();
@@ -79,10 +79,10 @@ public class JwtFilter extends OncePerRequestFilter {
 
             chain.doFilter(request, response);
 
-        } catch (Exception e) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json");
-            response.getWriter().write("{ \"code\": 401, \"message\": \"Token không hợp lệ hoặc đã hết hạn\" }");
-        }
+//        } catch (Exception e) {
+//            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+//            response.setContentType("application/json");
+//            response.getWriter().write("{ \"code\": 401, \"message\": \"Token không hợp lệ hoặc đã hết hạn\" }");
+//        }
     }
 }

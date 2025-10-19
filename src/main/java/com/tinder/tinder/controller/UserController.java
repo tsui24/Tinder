@@ -4,12 +4,17 @@ import com.tinder.tinder.dto.request.CreateInforUser;
 import com.tinder.tinder.dto.request.RegisterRequest;
 import com.tinder.tinder.dto.request.UserUpdate;
 import com.tinder.tinder.dto.response.ApiResponse;
+import com.tinder.tinder.dto.response.UserMatchResult;
 import com.tinder.tinder.jwt.JwtUtil;
 import com.tinder.tinder.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.apache.catalina.User;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/user")
@@ -98,6 +103,19 @@ public class UserController {
         apiResponse.setCode(200);
         apiResponse.setResult("");
         apiResponse.setMessage("Update user success");
+
+    @GetMapping("get-user-suitable")
+    public ApiResponse<List<UserMatchResult>> getUserNearBy(@RequestParam double distanceKm){
+        ApiResponse apiResponse = new ApiResponse();
+        List<UserMatchResult> results =  userService.findMatches(distanceKm);
+        if (results.size() == 0) {
+            apiResponse.setCode(HttpStatus.NO_CONTENT.value());
+            apiResponse.setMessage("Không có người dùng phù hợp với bạn, vui lòng điều chỉnh khoảng cách");
+            apiResponse.setResult(null);
+        }
+        apiResponse.setCode(200);
+        apiResponse.setResult(results);
+        apiResponse.setMessage("Lấy user thành công");
         return apiResponse;
     }
 }
