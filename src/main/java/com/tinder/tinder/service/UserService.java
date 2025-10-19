@@ -1,40 +1,35 @@
 package com.tinder.tinder.service;
 
-import com.tinder.tinder.utils.UserMapper;
 import com.tinder.tinder.dto.request.CreateInforUser;
 import com.tinder.tinder.dto.request.RegisterRequest;
 import com.tinder.tinder.dto.request.UserUpdate;
 import com.tinder.tinder.dto.response.UserMatchResult;
+import com.tinder.tinder.enums.RoleName;
 import com.tinder.tinder.exception.AppException;
 import com.tinder.tinder.exception.ErrorException;
+import com.tinder.tinder.model.Images;
+import com.tinder.tinder.model.Interests;
+import com.tinder.tinder.model.Users;
+import com.tinder.tinder.repository.ImagesRepository;
 import com.tinder.tinder.repository.InterestRepository;
 import com.tinder.tinder.repository.UserRepository;
-import com.tinder.tinder.enums.RoleName;
 import com.tinder.tinder.service.impl.IUserService;
-import com.tinder.tinder.utils.UtilsService;
+import com.tinder.tinder.utils.GraphHopperService;
 import com.tinder.tinder.utils.OSMService;
+import com.tinder.tinder.utils.UserMapper;
+import com.tinder.tinder.utils.UtilsService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import com.tinder.tinder.Utils.UtilsService;
-import com.tinder.tinder.utils.GraphHopperService;
-import com.tinder.tinder.utils.OSMService;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.Query;
-import jakarta.servlet.http.HttpServletRequest;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.repository.query.Param;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
-import java.util.*;
 import java.util.stream.Collectors;
-
-import com.tinder.tinder.model.Users;
 @Service
 public class UserService implements IUserService {
     private final UserRepository userRepository;
@@ -44,18 +39,16 @@ public class UserService implements IUserService {
     private final InterestRepository interestRepository;
     private final OSMService osmService;
     private final UserMapper userMapper;
-
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, UtilsService utilsService, ImagesService imagesService, InterestRepository interestRepository, OSMService osmService, UserMapper userMapper) {
-
     private final GraphHopperService graphHopperService;
     private final ImagesRepository imagesRepository;
     @PersistenceContext
     private EntityManager entityManager;
     private final double WEIGHT_SCORE = 0.7;
     private final double DISTANCE_SCORE = 1 - WEIGHT_SCORE;
+
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, UtilsService utilsService,
                        ImagesService imagesService, InterestRepository interestRepository, OSMService osmService,
-                       GraphHopperService graphHopperService, ImagesRepository imagesRepository) {
+                       GraphHopperService graphHopperService, ImagesRepository imagesRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.utilsService = utilsService;
