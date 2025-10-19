@@ -2,27 +2,37 @@ package com.tinder.tinder.service;
 
 import com.tinder.tinder.dto.request.CreateInforUser;
 import com.tinder.tinder.dto.request.RegisterRequest;
+import com.tinder.tinder.dto.request.UserUpdate;
 import com.tinder.tinder.dto.response.UserMatchResult;
+import com.tinder.tinder.enums.RoleName;
 import com.tinder.tinder.exception.AppException;
 import com.tinder.tinder.exception.ErrorException;
 import com.tinder.tinder.jwt.JwtUtil;
 import com.tinder.tinder.model.*;
 import com.tinder.tinder.repository.*;
 import com.tinder.tinder.enums.RoleName;
+import com.tinder.tinder.model.Images;
+import com.tinder.tinder.model.Interests;
+import com.tinder.tinder.model.Users;
+import com.tinder.tinder.repository.ImagesRepository;
+import com.tinder.tinder.repository.InterestRepository;
+import com.tinder.tinder.repository.UserRepository;
 import com.tinder.tinder.service.impl.IUserService;
-import com.tinder.tinder.Utils.UtilsService;
 import com.tinder.tinder.utils.GraphHopperService;
 import com.tinder.tinder.utils.OSMService;
+import com.tinder.tinder.utils.UserMapper;
+import com.tinder.tinder.utils.UtilsService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
-import jakarta.servlet.http.HttpServletRequest;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.repository.query.Param;
+import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,6 +43,7 @@ public class UserService implements IUserService {
     private final ImagesService imagesService;
     private final InterestRepository interestRepository;
     private final OSMService osmService;
+    private final UserMapper userMapper;
     private final GraphHopperService graphHopperService;
     private final ImagesRepository imagesRepository;
     private final LikeRepository likeRepository;
@@ -41,6 +52,7 @@ public class UserService implements IUserService {
     private EntityManager entityManager;
     private final double WEIGHT_SCORE = 0.7;
     private final double DISTANCE_SCORE = 1 - WEIGHT_SCORE;
+
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, UtilsService utilsService,
                        ImagesService imagesService, InterestRepository interestRepository, OSMService osmService,
                        GraphHopperService graphHopperService, ImagesRepository imagesRepository, LikeRepository likeRepository, MatchRepository matchRepository) {
@@ -50,6 +62,7 @@ public class UserService implements IUserService {
         this.imagesService = imagesService;
         this.interestRepository = interestRepository;
         this.osmService = osmService;
+        this.userMapper = userMapper;
         this.graphHopperService = graphHopperService;
         this.imagesRepository = imagesRepository;
         this.likeRepository = likeRepository;
@@ -144,6 +157,18 @@ public class UserService implements IUserService {
             return false;
         }
         return false;
+    }
+
+    @Override
+    @Transactional
+    public void updateUser(UserUpdate userUpdate) {
+        Long userID = utilsService.getUserIdFromToken();
+        Optional<Users> optional = userRepository.findById(userID);
+        if (optional.isPresent()) {
+            Users user = optional.get();
+            userMapper.updateUser(userUpdate, user);
+            userRepository.save(user);
+        }
     }
 
 //    @Override

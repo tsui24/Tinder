@@ -2,6 +2,7 @@ package com.tinder.tinder.controller;
 
 import com.tinder.tinder.dto.request.CreateInforUser;
 import com.tinder.tinder.dto.request.RegisterRequest;
+import com.tinder.tinder.dto.request.UserUpdate;
 import com.tinder.tinder.dto.response.ApiResponse;
 import com.tinder.tinder.dto.response.UserMatchResult;
 import com.tinder.tinder.jwt.JwtUtil;
@@ -93,6 +94,16 @@ public class UserController {
         response.setCode(200);
         response.setResult(result);
         return response;
+    }
+
+    @PatchMapping("/update-user")
+    public ApiResponse<String> updateUser(@RequestBody UserUpdate request) {
+        ApiResponse<String> apiResponse = new ApiResponse<>();
+        userService.updateUser(request);
+        apiResponse.setCode(200);
+        apiResponse.setResult("");
+        apiResponse.setMessage("Update user success");
+        return apiResponse;
     }
 
     @GetMapping("get-user-suitable")
