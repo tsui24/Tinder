@@ -6,11 +6,8 @@ import com.tinder.tinder.dto.response.UserMatchResult;
 import com.tinder.tinder.exception.AppException;
 import com.tinder.tinder.exception.ErrorException;
 import com.tinder.tinder.jwt.JwtUtil;
-import com.tinder.tinder.model.Images;
-import com.tinder.tinder.model.Interests;
-import com.tinder.tinder.repository.ImagesRepository;
-import com.tinder.tinder.repository.InterestRepository;
-import com.tinder.tinder.repository.UserRepository;
+import com.tinder.tinder.model.*;
+import com.tinder.tinder.repository.*;
 import com.tinder.tinder.enums.RoleName;
 import com.tinder.tinder.service.impl.IUserService;
 import com.tinder.tinder.Utils.UtilsService;
@@ -28,7 +25,6 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.tinder.tinder.model.Users;
 @Service
 public class UserService implements IUserService {
     private final UserRepository userRepository;
@@ -39,13 +35,15 @@ public class UserService implements IUserService {
     private final OSMService osmService;
     private final GraphHopperService graphHopperService;
     private final ImagesRepository imagesRepository;
+    private final LikeRepository likeRepository;
+    private final MatchRepository matchRepository;
     @PersistenceContext
     private EntityManager entityManager;
     private final double WEIGHT_SCORE = 0.7;
     private final double DISTANCE_SCORE = 1 - WEIGHT_SCORE;
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, UtilsService utilsService,
                        ImagesService imagesService, InterestRepository interestRepository, OSMService osmService,
-                       GraphHopperService graphHopperService, ImagesRepository imagesRepository) {
+                       GraphHopperService graphHopperService, ImagesRepository imagesRepository, LikeRepository likeRepository, MatchRepository matchRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.utilsService = utilsService;
@@ -54,6 +52,8 @@ public class UserService implements IUserService {
         this.osmService = osmService;
         this.graphHopperService = graphHopperService;
         this.imagesRepository = imagesRepository;
+        this.likeRepository = likeRepository;
+        this.matchRepository = matchRepository;
     }
 
     @Override
@@ -151,21 +151,30 @@ public class UserService implements IUserService {
 //        return (UserDetails) userRepository.findByUsername(username);
 //    }
 
-    private List<UserMatchResult> findAllExcept(Long userId, Integer interestedIn, String lat, String lon, double range) {
-        String sql = """
-        SELECT id as userId, full_name as fullName, YEAR(CURDATE()) - YEAR(birthday) as age, location,
-               ST_Distance_Sphere(POINT(address_lon, address_lat), POINT(:lon, :lat)) AS distanceKm
-        FROM user
-        WHERE ST_Distance_Sphere(POINT(address_lon, address_lat), POINT(:lon, :lat)) < :range
-          AND id <> :userId AND interested_in <> :interestedIn
-        ORDER BY distanceKm
-    """;
-        Query query = entityManager.createNativeQuery(sql, "UserMatchMapping");
+    private List<UserMatchResult> findAllExcept(Long userId, List<Integer> interestedIn, String lat, String lon, double range, Set<Long> idexisted) {
+
+        StringBuilder sqlBuilder = new StringBuilder("""
+            SELECT id as userId, full_name as fullName, YEAR(CURDATE()) - YEAR(birthday) as age, location,
+                   ST_Distance_Sphere(POINT(address_lon, address_lat), POINT(:lon, :lat)) AS distanceKm
+            FROM user
+            WHERE ST_Distance_Sphere(POINT(address_lon, address_lat), POINT(:lon, :lat)) < :range
+              AND id <> :userId 
+              AND gender IN (:interestedIn) 
+        """);
+        if (idexisted != null && !idexisted.isEmpty()) {
+            sqlBuilder.append(" AND id NOT IN (:idexisted)");
+        }
+        sqlBuilder.append(" ORDER BY distanceKm");
+        Query query = entityManager.createNativeQuery(sqlBuilder.toString(), "UserMatchMapping");
         query.setParameter("userId", userId);
         query.setParameter("interestedIn", interestedIn);
         query.setParameter("lat", lat);
         query.setParameter("lon", lon);
         query.setParameter("range", range);
+        if (idexisted != null && !idexisted.isEmpty()) {
+            query.setParameter("idexisted", idexisted);
+        }
+
         return query.getResultList();
     }
 
@@ -177,9 +186,31 @@ public class UserService implements IUserService {
             throw new AppException(ErrorException.USER_NOT_EXIST);
         }
         Users currentUser = userOptional.get();
+        List<Likes> likes = likeRepository.findAllByFromUser(currentUser);
+        List<Long> idsLike = new ArrayList<>();
+        likes.forEach(i -> idsLike.add(i.getToUser().getId()));
+        List<Matches> matches = matchRepository.findAllByUser1OrUser2(currentUser, currentUser);
+        List<Long> idsMatch = new ArrayList<>();
+        matches.forEach(m -> {
+            if (Objects.equals(m.getUser1().getId(), currentUser.getId())) {
+                idsMatch.add(m.getUser2().getId());
+            } else if (Objects.equals(m.getUser2().getId(), currentUser.getId())) {
+                idsMatch.add(m.getUser1().getId());
+            }
+        });
+        Set<Long> idexisted = new HashSet<>();
+        idexisted.addAll(idsLike);
+        idexisted.addAll(idsMatch);
         // lấy ra danh sách user match dựa trên khoảng cách
-        List<UserMatchResult> allUsers = this.findAllExcept(userID, currentUser.getInterestedIn(),
-                currentUser.getAddressLat(), currentUser.getAddressLon(), maxDistanceKm);
+        List<Integer> interestedIn = new ArrayList<>();
+        if (currentUser.getInterestedIn() == 0) {
+            interestedIn.add(1);
+            interestedIn.add(2);
+        } else {
+            interestedIn.add(currentUser.getInterestedIn());
+        }
+        List<UserMatchResult> allUsers = this.findAllExcept(userID, interestedIn,
+                currentUser.getAddressLat(), currentUser.getAddressLon(), maxDistanceKm, idexisted);
         List<Long> userIds = allUsers.stream()
                 .map(UserMatchResult::getUserId)
                 .toList();
