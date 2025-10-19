@@ -1,18 +1,24 @@
 package com.tinder.tinder.service;
 
+import com.tinder.tinder.utils.UserMapper;
 import com.tinder.tinder.dto.request.CreateInforUser;
 import com.tinder.tinder.dto.request.RegisterRequest;
+import com.tinder.tinder.dto.request.UserUpdate;
 import com.tinder.tinder.dto.response.UserMatchResult;
 import com.tinder.tinder.exception.AppException;
 import com.tinder.tinder.exception.ErrorException;
-import com.tinder.tinder.jwt.JwtUtil;
-import com.tinder.tinder.model.Images;
-import com.tinder.tinder.model.Interests;
-import com.tinder.tinder.repository.ImagesRepository;
 import com.tinder.tinder.repository.InterestRepository;
 import com.tinder.tinder.repository.UserRepository;
 import com.tinder.tinder.enums.RoleName;
 import com.tinder.tinder.service.impl.IUserService;
+import com.tinder.tinder.utils.UtilsService;
+import com.tinder.tinder.utils.OSMService;
+import jakarta.transaction.Transactional;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
 import com.tinder.tinder.Utils.UtilsService;
 import com.tinder.tinder.utils.GraphHopperService;
 import com.tinder.tinder.utils.OSMService;
@@ -37,6 +43,10 @@ public class UserService implements IUserService {
     private final ImagesService imagesService;
     private final InterestRepository interestRepository;
     private final OSMService osmService;
+    private final UserMapper userMapper;
+
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, UtilsService utilsService, ImagesService imagesService, InterestRepository interestRepository, OSMService osmService, UserMapper userMapper) {
+
     private final GraphHopperService graphHopperService;
     private final ImagesRepository imagesRepository;
     @PersistenceContext
@@ -52,6 +62,7 @@ public class UserService implements IUserService {
         this.imagesService = imagesService;
         this.interestRepository = interestRepository;
         this.osmService = osmService;
+        this.userMapper = userMapper;
         this.graphHopperService = graphHopperService;
         this.imagesRepository = imagesRepository;
     }
@@ -144,6 +155,18 @@ public class UserService implements IUserService {
             return false;
         }
         return false;
+    }
+
+    @Override
+    @Transactional
+    public void updateUser(UserUpdate userUpdate) {
+        Long userID = utilsService.getUserIdFromToken();
+        Optional<Users> optional = userRepository.findById(userID);
+        if (optional.isPresent()) {
+            Users user = optional.get();
+            userMapper.updateUser(userUpdate, user);
+            userRepository.save(user);
+        }
     }
 
 //    @Override
