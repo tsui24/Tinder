@@ -19,4 +19,7 @@ public interface UserRepository extends JpaRepository<Users, Long> {
             "ORDER BY distanceKm;", nativeQuery = true)
     List<UserMatchResult> findAllExcept(@Param("userId") Long userId, @Param("interestedIn") Integer interestedIn,
                                         @Param("lat") String lat, @Param("lon") String lon, @Param("range") double range);
+
+    @Query(value = "select i.url from user u left join images i on u.id = i.users_id where u.id = :userId", nativeQuery = true)
+    List<String> getAllUrlByUser(@Param("userId") Long userId);
 }

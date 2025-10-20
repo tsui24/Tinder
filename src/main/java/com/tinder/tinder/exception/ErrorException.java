@@ -14,8 +14,9 @@ public enum ErrorException {
     WRONG_USERNAME_PASSWORD(107, "Sai tên đăng nhập hoặc mật khẩu"),
     INVALID_OLD_PASSWORD(108, "Mật khẩu cũ không hợp lệ"),
     NEW_PASSWORD_SAME_AS_OLD(109, "Mật khẩu mới giống với mật khẩu cũ"),
-    INTEREST_NAM_NOT_BLANK(110, "Tên sở thích không được để trống"),
-    NAME_INTEREST_EXISTS(111, "Tên sở thích đã tồn tại");
+    INTEREST_NAME_NOT_BLANK(110, "Tên sở thích không được để trống"),
+    NAME_INTEREST_EXISTS(111, "Tên sở thích đã tồn tại"),
+    INTERSET_NOT_EXIST(112, "Tên sở thích không tồn tại");
     private int code;
     private String message;
 

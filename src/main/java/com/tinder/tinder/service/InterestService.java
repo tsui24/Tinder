@@ -8,6 +8,8 @@ import com.tinder.tinder.repository.InterestRepository;
 import com.tinder.tinder.service.impl.IInterestService;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class InterestService implements IInterestService {
 
@@ -21,7 +23,7 @@ public class InterestService implements IInterestService {
     public void addInterest(InterestCreate interestCreate) {
         Interests newInterest = new Interests();
         if(interestCreate.getName() == null || interestCreate.getName().isEmpty()) {
-            throw new AppException(ErrorException.INTEREST_NAM_NOT_BLANK);
+            throw new AppException(ErrorException.INTEREST_NAME_NOT_BLANK);
         }
         Interests exist = interestRepository.getByName(interestCreate.getName());
         if (exist == null) {
@@ -30,5 +32,31 @@ public class InterestService implements IInterestService {
         } else {
             throw new AppException(ErrorException.NAME_INTEREST_EXISTS);
         }
+    }
+
+    @Override
+    public void updateInterest(Long id, String name) {
+
+        Interests interest = interestRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorException.INTERSET_NOT_EXIST));
+
+        if (name == null || name.trim().isEmpty()) {
+            throw new AppException(ErrorException.INTEREST_NAME_NOT_BLANK);
+        }
+
+        String trimmedName = name.trim();
+
+        if (trimmedName.equals(interest.getName())) {
+            return;
+        }
+
+        Interests exist = interestRepository.getByName(name);
+        if (exist == null) {
+            interest.setName(name.trim());
+            interestRepository.save(interest);
+        } else {
+            throw new AppException(ErrorException.NAME_INTEREST_EXISTS);
+        }
+        interestRepository.save(interest);
     }
 }
