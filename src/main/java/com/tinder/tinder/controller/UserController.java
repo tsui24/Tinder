@@ -2,6 +2,7 @@ package com.tinder.tinder.controller;
 
 import com.tinder.tinder.dto.request.CreateInforUser;
 import com.tinder.tinder.dto.request.RegisterRequest;
+import com.tinder.tinder.dto.request.UpdateUserImagesDTO;
 import com.tinder.tinder.dto.request.UserUpdate;
 import com.tinder.tinder.dto.response.ApiResponse;
 import com.tinder.tinder.dto.response.UserMatchResult;
@@ -13,6 +14,7 @@ import org.apache.catalina.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
