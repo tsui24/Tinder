@@ -15,7 +15,9 @@ public enum ErrorException {
     INVALID_OLD_PASSWORD(108, "Mật khẩu cũ không hợp lệ"),
     NEW_PASSWORD_SAME_AS_OLD(109, "Mật khẩu mới giống với mật khẩu cũ"),
     INTEREST_NAM_NOT_BLANK(110, "Tên sở thích không được để trống"),
-    NAME_INTEREST_EXISTS(111, "Tên sở thích đã tồn tại");
+    NAME_INTEREST_EXISTS(111, "Tên sở thích đã tồn tại"),
+    MATCH_NOT_FOUND(112, "Match không tồn tại"),
+    USER_NOT_OF_MATCH(113,"Người dùng ko thuộc phiên tin nhắn này");
     private int code;
     private String message;
 

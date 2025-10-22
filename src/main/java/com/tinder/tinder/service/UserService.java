@@ -4,10 +4,12 @@ import com.tinder.tinder.dto.request.CreateInforUser;
 import com.tinder.tinder.dto.request.RegisterRequest;
 import com.tinder.tinder.dto.request.UserUpdate;
 import com.tinder.tinder.dto.response.UserMatchResult;
+import com.tinder.tinder.dto.response.UserSettingResponse;
 import com.tinder.tinder.enums.RoleName;
 import com.tinder.tinder.exception.AppException;
 import com.tinder.tinder.exception.ErrorException;
 import com.tinder.tinder.jwt.JwtUtil;
+import com.tinder.tinder.mapper.UserSettingMapper;
 import com.tinder.tinder.model.*;
 import com.tinder.tinder.repository.*;
 import com.tinder.tinder.enums.RoleName;
@@ -45,6 +47,7 @@ public class UserService implements IUserService {
     private final ImagesRepository imagesRepository;
     private final LikeRepository likeRepository;
     private final MatchRepository matchRepository;
+    private final UserSettingMapper userSettingMapper;
     @PersistenceContext
     private EntityManager entityManager;
     private final double WEIGHT_SCORE = 0.7;
@@ -52,7 +55,8 @@ public class UserService implements IUserService {
 
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, UtilsService utilsService,
                        ImagesService imagesService, InterestRepository interestRepository, OSMService osmService,
-                       GraphHopperService graphHopperService, ImagesRepository imagesRepository, LikeRepository likeRepository, MatchRepository matchRepository, UserMapper userMapper) {
+                       GraphHopperService graphHopperService, ImagesRepository imagesRepository, LikeRepository likeRepository,
+                       MatchRepository matchRepository, UserMapper userMapper, UserSettingMapper userSettingMapper) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.utilsService = utilsService;
@@ -64,6 +68,7 @@ public class UserService implements IUserService {
         this.imagesRepository = imagesRepository;
         this.likeRepository = likeRepository;
         this.matchRepository = matchRepository;
+        this.userSettingMapper = userSettingMapper;
     }
 
     @Override
@@ -96,8 +101,15 @@ public class UserService implements IUserService {
             user.setBirthday(inforUser.getBirthday());
             user.setGender(inforUser.getGender());
             user.setInterestedIn(inforUser.getInterestedIn());
-//            List<Interests> interestsList = interestRepository.findAllById(inforUser.getInterestIds());
-//            user.setInterests(interestsList);
+            user.setBio(inforUser.getBio());
+            user.setCompany(inforUser.getCompany());
+            user.setTall(inforUser.getTall());
+            user.setSchool(inforUser.getSchool());
+            user.setDistanceRange(10.0);
+            user.setMinAge(1);
+            user.setMaxAge(36);
+            List<Interests> interestsList = interestRepository.findAllById(inforUser.getInterestIds());
+            user.setInterests(interestsList);
             user.setLocation(osmService.getLocationName(inforUser.getAddressLat(), inforUser.getAddressLon()));
             List<String> images = inforUser.getImages();
             userRepository.save(user);
@@ -118,6 +130,7 @@ public class UserService implements IUserService {
             Users user = userOptional.get();
             user.setAddressLat(addressLat);
             user.setAddressLon(addressLon);
+            user.setLocation(osmService.getLocationName(addressLat, addressLon));
             userRepository.save(user);
         } else {
             throw new AppException(ErrorException.USER_NOT_EXIST);
@@ -173,15 +186,17 @@ public class UserService implements IUserService {
 //        return (UserDetails) userRepository.findByUsername(username);
 //    }
 
-    private List<UserMatchResult> findAllExcept(Long userId, List<Integer> interestedIn, String lat, String lon, double range, Set<Long> idexisted) {
+    private List<UserMatchResult> findAllExcept(Long userId, List<Integer> interestedIn, String lat, String lon, double range, Set<Long> idexisted, Integer minAge, Integer maxAge) {
 
         StringBuilder sqlBuilder = new StringBuilder("""
             SELECT id as userId, full_name as fullName, YEAR(CURDATE()) - YEAR(birthday) as age, location,
-                   ST_Distance_Sphere(POINT(address_lon, address_lat), POINT(:lon, :lat)) AS distanceKm
+                   ST_Distance_Sphere(POINT(address_lon, address_lat), POINT(:lon, :lat)) AS distanceKm, tall, school, company, bio 
             FROM user
             WHERE ST_Distance_Sphere(POINT(address_lon, address_lat), POINT(:lon, :lat)) < :range
               AND id <> :userId 
               AND gender IN (:interestedIn) 
+              AND YEAR(CURDATE()) - year(birthday) >= :minAge
+              AND YEAR(CURDATE()) - year(birthday) <= :maxAge
         """);
         if (idexisted != null && !idexisted.isEmpty()) {
             sqlBuilder.append(" AND id NOT IN (:idexisted)");
@@ -193,6 +208,8 @@ public class UserService implements IUserService {
         query.setParameter("lat", lat);
         query.setParameter("lon", lon);
         query.setParameter("range", range);
+        query.setParameter("minAge", minAge);
+        query.setParameter("maxAge", maxAge);
         if (idexisted != null && !idexisted.isEmpty()) {
             query.setParameter("idexisted", idexisted);
         }
@@ -201,7 +218,7 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public List<UserMatchResult> findMatches(double maxDistanceKm) {
+    public List<UserMatchResult> findMatches() {
         Long userID = utilsService.getUserIdFromToken();
         Optional<Users> userOptional = userRepository.findById(userID);
         if (userOptional.isEmpty()) {
@@ -232,7 +249,8 @@ public class UserService implements IUserService {
             interestedIn.add(currentUser.getInterestedIn());
         }
         List<UserMatchResult> allUsers = this.findAllExcept(userID, interestedIn,
-                currentUser.getAddressLat(), currentUser.getAddressLon(), maxDistanceKm, idexisted);
+                currentUser.getAddressLat(), currentUser.getAddressLon(), currentUser.getDistanceRange() * 1000,
+                idexisted, currentUser.getMinAge(), currentUser.getMaxAge());
         List<Long> userIds = allUsers.stream()
                 .map(UserMatchResult::getUserId)
                 .toList();
@@ -248,7 +266,7 @@ public class UserService implements IUserService {
             common.retainAll(other.getInterests());
             double interestScore = (double) common.size() /
                     (currentUser.getInterests().size() + other.getInterests().size() - common.size());
-            double distanceScore = 1 - (matchResult.getDistanceKm() / maxDistanceKm);
+            double distanceScore = 1 - (matchResult.getDistanceKm() / (currentUser.getDistanceRange() * 100));
             double finalScore = (WEIGHT_SCORE * interestScore) + (DISTANCE_SCORE * distanceScore);
             matchResult.setFinalScore(finalScore);
             matchResult.setDistanceKm(Math.ceil(distanceScore / 1000));
@@ -266,5 +284,34 @@ public class UserService implements IUserService {
         }
         results.sort((a, b) -> Double.compare(b.getFinalScore(), a.getFinalScore()));
         return results;
+    }
+
+    @Override
+    public UserSettingResponse getUserSetting() {
+        Long userID = utilsService.getUserIdFromToken();
+        Optional<Users> userOptional = userRepository.findById(userID);
+        if (userOptional.isEmpty()) {
+            throw new AppException(ErrorException.USER_NOT_EXIST);
+        }
+        Users currentUser = userOptional.get();
+        UserSettingResponse response = new UserSettingResponse();
+        response.setLocation(currentUser.getLocation());
+        response.setDistanceRange(currentUser.getDistanceRange());
+        response.setMinAge(currentUser.getMinAge());
+        response.setMaxAge(currentUser.getMaxAge());
+        return response;
+    }
+
+    @Override
+    public UserSettingResponse updateUserSetting(UserSettingResponse update) {
+        Long userID = utilsService.getUserIdFromToken();
+        Optional<Users> userOptional = userRepository.findById(userID);
+        if (userOptional.isEmpty()) {
+            throw new AppException(ErrorException.USER_NOT_EXIST);
+        }
+        Users currentUser = userOptional.get();
+        userSettingMapper.updateUserFromSetting(update, currentUser);
+        userRepository.save(currentUser);
+        return update;
     }
 }

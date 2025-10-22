@@ -3,8 +3,20 @@ spring:
     name: tinder-chat-service
   profiles:
     active: dev
-
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
 graphhopper:
   api:
     key: bd94e62c-041a-421f-8083-8130055d35cb
     url: https://graphhopper.com/api/1/route
+
+stomp:
+  broker:
+    relay:
+      host: localhost
+      port: 61613
+      login: guest
+      passcode: guest

@@ -8,6 +8,8 @@ import com.tinder.tinder.repository.InterestRepository;
 import com.tinder.tinder.service.impl.IInterestService;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class InterestService implements IInterestService {
 
@@ -30,5 +32,10 @@ public class InterestService implements IInterestService {
         } else {
             throw new AppException(ErrorException.NAME_INTEREST_EXISTS);
         }
+    }
+
+    @Override
+    public List<Interests> getAllInterests() {
+        return interestRepository.findAll();
     }
 }

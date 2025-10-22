@@ -4,6 +4,7 @@ import com.tinder.tinder.dto.request.CreateInforUser;
 import com.tinder.tinder.dto.request.RegisterRequest;
 import com.tinder.tinder.dto.request.UserUpdate;
 import com.tinder.tinder.dto.response.UserMatchResult;
+import com.tinder.tinder.dto.response.UserSettingResponse;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
@@ -16,5 +17,7 @@ public interface IUserService {
     void changePassword(String oldPassword, String newPassword);
     Boolean checkUser();
     void updateUser(UserUpdate userUpdate);
-    List<UserMatchResult> findMatches(double maxDistanceKm);
+    List<UserMatchResult> findMatches();
+    UserSettingResponse getUserSetting();
+    UserSettingResponse updateUserSetting(UserSettingResponse update);
 }

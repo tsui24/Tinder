@@ -4,6 +4,8 @@ import com.tinder.tinder.dto.response.UserMatchResult;
 import com.tinder.tinder.enums.RoleName;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -21,11 +23,18 @@ import java.util.Set;
                         @ColumnResult(name = "fullName", type = String.class),
                         @ColumnResult(name = "age", type = Integer.class),
                         @ColumnResult(name = "location", type = String.class),
-                        @ColumnResult(name = "distanceKm", type = Double.class)
+                        @ColumnResult(name = "distanceKm", type = Double.class),
+                        @ColumnResult(name = "tall", type = Double.class),
+                        @ColumnResult(name = "school", type = String.class),
+                        @ColumnResult(name = "company", type = String.class),
+                        @ColumnResult(name = "bio", type = String.class)
                 }
         )
 )
 @Table(name = "user")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Users {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,6 +60,19 @@ public class Users {
 
     private String location;
 
+    private String school;
+
+    private Double tall;
+
+    private String company;
+
+    private String bio;
+
+    private Double distanceRange;
+
+    private Integer minAge;
+
+    private Integer maxAge;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private RoleName role;
@@ -66,136 +88,5 @@ public class Users {
     )
     private List<Interests> interests = new ArrayList<>();
 
-    public Users(Long id, String username, String password, String fullName, String email, String addressLon, String addressLat, Integer gender, Integer interestedIn, LocalDate birthday, RoleName role, List<Images> images, List<Interests> interests, String location) {
-        this.id = id;
-        this.username = username;
-        this.password = password;
-        this.fullName = fullName;
-        this.email = email;
-        this.addressLon = addressLon;
-        this.addressLat = addressLat;
-        this.gender = gender;
-        this.interestedIn = interestedIn;
-        this.birthday = birthday;
-        this.role = role;
-        this.images = images;
-        this.interests = interests;
-        this.location = location;
-    }
 
-    public Users() {
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getFullName() {
-        return fullName;
-    }
-
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-
-    public String getAddressLon() {
-        return addressLon;
-    }
-
-    public void setAddressLon(String addressLon) {
-        this.addressLon = addressLon;
-    }
-
-    public String getAddressLat() {
-        return addressLat;
-    }
-
-    public void setAddressLat(String addressLat) {
-        this.addressLat = addressLat;
-    }
-
-    public Integer getGender() {
-        return gender;
-    }
-
-    public void setGender(Integer gender) {
-        this.gender = gender;
-    }
-
-    public Integer getInterestedIn() {
-        return interestedIn;
-    }
-
-    public void setInterestedIn(Integer interestedIn) {
-        this.interestedIn = interestedIn;
-    }
-
-    public LocalDate getBirthday() {
-        return birthday;
-    }
-
-    public void setBirthday(LocalDate birthday) {
-        this.birthday = birthday;
-    }
-
-    public RoleName getRole() {
-        return role;
-    }
-
-    public void setRole(RoleName role) {
-        this.role = role;
-    }
-
-    public List<Images> getImages() {
-        return images;
-    }
-
-    public void setImages(List<Images> images) {
-        this.images = images;
-    }
-
-    public List<Interests> getInterests() {
-        return interests;
-    }
-
-    public void setInterests(List<Interests> interests) {
-        this.interests = interests;
-    }
-
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
-    }
 }
