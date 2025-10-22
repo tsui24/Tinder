@@ -2,9 +2,13 @@ package com.tinder.tinder.controller;
 
 import com.tinder.tinder.dto.request.InterestCreate;
 import com.tinder.tinder.dto.response.ApiResponse;
+import com.tinder.tinder.model.Interests;
 import com.tinder.tinder.service.InterestService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
 
 @RestController
 @RequestMapping("/api/interest")
@@ -32,6 +36,16 @@ public class InterestsController {
         interestService.updateInterest(id, name);
         response.setMessage("Successfully update interest");
         response.setCode(HttpStatus.ACCEPTED.value());
+        return response;
+    }
+
+    @GetMapping
+    public ApiResponse<Interests> getInterests() {
+        ApiResponse response = new ApiResponse();
+        List<Interests> interests = interestService.getAllInterests();
+        response.setCode(200);
+        response.setMessage("Successfully retrieved interests");
+        response.setResult(interests);
         return response;
     }
 }

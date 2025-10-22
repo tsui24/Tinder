@@ -6,6 +6,7 @@ import com.tinder.tinder.dto.request.UpdateUserImagesDTO;
 import com.tinder.tinder.dto.request.UserUpdate;
 import com.tinder.tinder.dto.response.ApiResponse;
 import com.tinder.tinder.dto.response.UserMatchResult;
+import com.tinder.tinder.dto.response.UserSettingResponse;
 import com.tinder.tinder.jwt.JwtUtil;
 import com.tinder.tinder.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -70,9 +71,9 @@ public class UserController {
         return apiResponse;
     }
     @PutMapping("update-address")
-    public ApiResponse<String> updateAddress(@RequestParam String addressLon, String addressLat) {
+    public ApiResponse<String> updateAddress(@RequestParam String lon, String lat) {
         ApiResponse apiResponse = new ApiResponse();
-        userService.updateAddressUser(addressLon, addressLat);
+        userService.updateAddressUser(lat, lon);
         apiResponse.setMessage("Cập nhật vị trí của người dùng thành công");
         apiResponse.setCode(200);
         apiResponse.setResult("");
@@ -108,19 +109,40 @@ public class UserController {
         return apiResponse;
     }
 
-    @GetMapping("get-user-suitable")
-    public ApiResponse<List<UserMatchResult>> getUserNearBy(@RequestParam double distanceKm){
-        ApiResponse apiResponse = new ApiResponse();
-        List<UserMatchResult> results =  userService.findMatches(distanceKm);
-        if (results.size() == 0) {
+    @GetMapping("/get-user-suitable")
+    public ApiResponse<List<UserMatchResult>> getUserNearBy() {
+
+        ApiResponse<List<UserMatchResult>> apiResponse = new ApiResponse<>();
+        List<UserMatchResult> results = userService.findMatches();
+
+        if (results == null || results.isEmpty()) {
             apiResponse.setCode(HttpStatus.NO_CONTENT.value());
             apiResponse.setMessage("Không có người dùng phù hợp với bạn, vui lòng điều chỉnh khoảng cách");
             apiResponse.setResult(null);
             return apiResponse;
         }
-        apiResponse.setCode(200);
-        apiResponse.setResult(results);
+
+        apiResponse.setCode(HttpStatus.OK.value());
         apiResponse.setMessage("Lấy user thành công");
+        apiResponse.setResult(results);
+        return apiResponse;
+    }
+
+    @GetMapping("/get-setting-user")
+    public ApiResponse<UserSettingResponse> getUserSetting() {
+        ApiResponse<UserSettingResponse> apiResponse = new ApiResponse<>();
+        apiResponse.setCode(HttpStatus.OK.value());
+        apiResponse.setMessage("Thành công");
+        apiResponse.setResult(userService.getUserSetting());
+        return apiResponse;
+    }
+
+    @PatchMapping("/update-setting-user")
+    public ApiResponse<UserSettingResponse> updateSetting(@RequestBody UserSettingResponse request){
+        ApiResponse<UserSettingResponse> apiResponse = new ApiResponse<>();
+        apiResponse.setCode(HttpStatus.OK.value());
+        apiResponse.setMessage("Thành công");
+        apiResponse.setResult(userService.updateUserSetting(request));
         return apiResponse;
     }
 }

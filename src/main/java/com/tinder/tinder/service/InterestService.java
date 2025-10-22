@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+import java.util.List;
+
 @Service
 public class InterestService implements IInterestService {
 
@@ -58,5 +60,10 @@ public class InterestService implements IInterestService {
             throw new AppException(ErrorException.NAME_INTEREST_EXISTS);
         }
         interestRepository.save(interest);
+    }
+
+    @Override
+    public List<Interests> getAllInterests() {
+        return interestRepository.findAll();
     }
 }
