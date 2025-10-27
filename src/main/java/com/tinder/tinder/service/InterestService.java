@@ -40,7 +40,7 @@ public class InterestService implements IInterestService {
     public void updateInterest(Long id, String name) {
 
         Interests interest = interestRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorException.INTERSET_NOT_EXIST));
+                .orElseThrow(() -> new AppException(ErrorException.INTEREST_NOT_EXIST));
 
         if (name == null || name.trim().isEmpty()) {
             throw new AppException(ErrorException.INTEREST_NAME_NOT_BLANK);
