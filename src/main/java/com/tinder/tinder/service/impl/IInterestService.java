@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface IInterestService {
     void addInterest(InterestCreate interestCreate);
-    void updateInterest(Long id, String name);
+    void updateInterest(Long id, InterestCreate request);
     List<Interests> getAllInterests();
 }

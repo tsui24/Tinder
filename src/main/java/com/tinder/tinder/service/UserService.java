@@ -3,9 +3,9 @@ package com.tinder.tinder.service;
 import com.tinder.tinder.dto.request.CreateInforUser;
 import com.tinder.tinder.dto.request.RegisterRequest;
 import com.tinder.tinder.dto.request.UserUpdate;
-import com.tinder.tinder.dto.response.UserMatchResult;
-import com.tinder.tinder.dto.response.UserSettingResponse;
+import com.tinder.tinder.dto.response.*;
 import com.tinder.tinder.enums.RoleName;
+import com.tinder.tinder.enums.StatusName;
 import com.tinder.tinder.exception.AppException;
 import com.tinder.tinder.exception.ErrorException;
 import com.tinder.tinder.jwt.JwtUtil;
@@ -28,9 +28,16 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import jakarta.transaction.Transactional;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -48,15 +55,18 @@ public class UserService implements IUserService {
     private final LikeRepository likeRepository;
     private final MatchRepository matchRepository;
     private final UserSettingMapper userSettingMapper;
+    private final JavaMailSender mailSender;
+    private final MessageRepository messageRepository;
     @PersistenceContext
     private EntityManager entityManager;
     private final double WEIGHT_SCORE = 0.7;
     private final double DISTANCE_SCORE = 1 - WEIGHT_SCORE;
-
+    private final long tempPasswordExpiryHours = 24;
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, UtilsService utilsService,
                        ImagesService imagesService, InterestRepository interestRepository, OSMService osmService,
                        GraphHopperService graphHopperService, ImagesRepository imagesRepository, LikeRepository likeRepository,
-                       MatchRepository matchRepository, UserMapper userMapper, UserSettingMapper userSettingMapper) {
+                       MatchRepository matchRepository, UserMapper userMapper, UserSettingMapper userSettingMapper,
+                       JavaMailSender mailSender, MessageRepository messageRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.utilsService = utilsService;
@@ -69,6 +79,8 @@ public class UserService implements IUserService {
         this.likeRepository = likeRepository;
         this.matchRepository = matchRepository;
         this.userSettingMapper = userSettingMapper;
+        this.mailSender = mailSender;
+        this.messageRepository = messageRepository;
     }
 
     @Override
@@ -176,7 +188,12 @@ public class UserService implements IUserService {
         Optional<Users> optional = userRepository.findById(userID);
         if (optional.isPresent()) {
             Users user = optional.get();
-            userMapper.updateUser(userUpdate, user);
+            user.setFullName(userUpdate.getFullName());
+            user.setEmail(userUpdate.getEmail());
+            user.setTall(userUpdate.getTall());
+            user.setSchool(userUpdate.getSchool());
+            user.setCompany(userUpdate.getCompany());
+            user.setBio(userUpdate.getBio());
             userRepository.save(user);
         }
     }
@@ -310,8 +327,225 @@ public class UserService implements IUserService {
             throw new AppException(ErrorException.USER_NOT_EXIST);
         }
         Users currentUser = userOptional.get();
-        userSettingMapper.updateUserFromSetting(update, currentUser);
+        if (update.getLocation() != null) {
+            currentUser.setLocation(update.getLocation());
+        }
+        if (update.getDistanceRange() != null) {
+            currentUser.setDistanceRange(update.getDistanceRange());
+        }
+        if (update.getMinAge() != null) {
+            currentUser.setMinAge(update.getMinAge());
+        }
+        if (update.getMaxAge() != null) {
+            currentUser.setMaxAge(update.getMaxAge());
+        }
+//        userSettingMapper.updateUserFromSetting(update, currentUser);
         userRepository.save(currentUser);
         return update;
+    }
+
+    public List<UserMatchResult> findAllUserLike() {
+        Long userID = utilsService.getUserIdFromToken();
+        Users currentUser = userRepository.findById(userID)
+                .orElseThrow(() -> new AppException(ErrorException.USER_NOT_EXIST));
+
+        // Lấy danh sách người đã like mình
+        List<Likes> likes = likeRepository.findAllByToUserAndStatus(currentUser, StatusName.LIKE);
+
+        //  Map ra danh sách user đã like mình
+        List<Users> userLikeList = likes.stream()
+                .map(Likes::getFromUser)
+                .filter(Objects::nonNull)
+                .toList();
+
+        if (userLikeList.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // Duyệt từng user và map thành UserMatchResult
+        return userLikeList.stream().map(user -> {
+            UserMatchResult dto = new UserMatchResult();
+            dto.setUserId(user.getId());
+            dto.setFullName(user.getFullName());
+            dto.setAge(calculateAge(user.getBirthday()));
+            dto.setLocation(osmService.getLocationName(
+                    String.valueOf(user.getAddressLat()),
+                    String.valueOf(user.getAddressLon())
+            ));
+
+            // Tính khoảng cách thực tế bằng GraphHopper (km)
+            double distanceKm = osmService.calculateDistanceByOSM(
+                    currentUser.getAddressLat(),
+                    currentUser.getAddressLon(),
+                    user.getAddressLat(),
+                    user.getAddressLon()
+            );
+            dto.setDistanceKm(distanceKm);
+
+            dto.setTall(user.getTall());
+            dto.setSchool(user.getSchool());
+            dto.setCompany(user.getCompany());
+            dto.setBio(user.getBio());
+            dto.setImagesList(
+                    user.getImages() != null
+                            ? user.getImages().stream().map(Images::getUrl).toList()
+                            : List.of()
+            );
+            dto.setInterestsList(
+                    user.getInterests() != null
+                            ? user.getInterests().stream().map(Interests::getName).toList()
+                            : List.of()
+            );
+            dto.setFinalScore(0.0);
+            return dto;
+        }).toList();
+    }
+
+    @Override
+    public ProfileResponse getProfile() {
+        Long userId = utilsService.getUserIdFromToken();
+        Users currentUser = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorException.USER_NOT_EXIST));
+        ProfileResponse response = new ProfileResponse();
+        response.setUsername(currentUser.getUsername());
+        response.setFullName(currentUser.getFullName());
+        response.setBirthday(currentUser.getBirthday());
+        response.setGender(currentUser.getGender());
+        response.setEmail(currentUser.getEmail());
+        response.setBio(currentUser.getBio());
+        response.setTall(currentUser.getTall());
+        response.setSchool(currentUser.getSchool());
+        response.setCompany(currentUser.getCompany());
+        response.setImages(currentUser.getImages().stream().map(Images::getUrl).toList());
+        return response;
+    }
+
+    @Override
+    public List<UserManagement> getUsersManagement() {
+        List<Users> usersList = userRepository.findAllByRole(RoleName.ROLE_USER);
+        List<UserManagement> res = new ArrayList<>();
+        usersList.forEach(i -> {
+            UserManagement userManagement = new UserManagement();
+            userManagement.setUsername(i.getUsername());
+            userManagement.setFullName(i.getFullName());
+            userManagement.setBirthday(i.getBirthday());
+            userManagement.setGender(i.getGender());
+            userManagement.setEmail(i.getEmail());
+            userManagement.setLocation(i.getLocation());
+            res.add(userManagement);
+        });
+        return res;
+    }
+
+    @Override
+    public InforDashBoard getInforDashBoard() {
+        InforDashBoard inforDashBoard = new InforDashBoard();
+        inforDashBoard.setTotalUserCount(userRepository.findAllByRole(RoleName.ROLE_USER).size());
+        inforDashBoard.setTotalMatchesCount(matchRepository.findAll().size());
+        inforDashBoard.setTotalMessageCount(messageRepository.findAll().size());
+        return inforDashBoard;
+    }
+
+    private int calculateAge(LocalDate birthday) {
+        return Period.between(birthday, LocalDate.now()).getYears();
+    }
+
+    public void forgotPassword(String email) {
+        Users user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorException.USER_NOT_EXIST));
+
+        if (!user.getEmail().equalsIgnoreCase(email)) {
+            throw new AppException(ErrorException.EMAIL_NOT_TRUE);
+        }
+        String tempPassword = generateSecurePassword(12);
+
+        String encoded = passwordEncoder.encode(tempPassword);
+        user.setPassword(encoded);
+//        user.setForceChangePassword(true);
+//        user.setTempPasswordExpiry(Instant.now().plus(tempPasswordExpiryHours, ChronoUnit.HOURS));
+
+        userRepository.save(user);
+
+        sendTempPasswordEmail(user.getEmail(), user.getFullName(), tempPassword);
+    }
+    private void sendTempPasswordEmail(String toEmail, String fullName, String tempPassword) {
+        String subject = "Mật khẩu tạm thời cho tài khoản của bạn";
+        String text = "Xin chào " + (fullName == null ? "" : fullName) + ",\n\n"
+                + "Bạn (hoặc ai đó) đã yêu cầu khôi phục mật khẩu. Dưới đây là mật khẩu tạm thời của bạn:\n\n"
+                + "Mật khẩu tạm thời: " + tempPassword + "\n\n"
+                + "Lưu ý:\n"
+                + "- Mật khẩu này sẽ hết hạn sau " + tempPasswordExpiryHours + " giờ.\n"
+                + "- Khi đăng nhập bằng mật khẩu này, bạn sẽ được yêu cầu đổi mật khẩu mới.\n\n"
+                + "Nếu bạn không yêu cầu khôi phục mật khẩu, hãy bỏ qua email này hoặc liên hệ hỗ trợ.\n\n"
+                + "Trân trọng,\n"
+                + "Team của bạn";
+
+        SimpleMailMessage msg = new SimpleMailMessage();
+        msg.setTo(toEmail);
+        msg.setSubject(subject);
+        msg.setText(text);
+        // optional: msg.setFrom("no-reply@yourdomain.com");
+        mailSender.send(msg);
+    }
+    public boolean createTempPasswordAndSend(String email) {
+        Optional<Users> optUser = userRepository.findByEmail(email);
+        if (optUser.isEmpty()) {
+            return false;
+        }
+
+        Users user = optUser.get();
+
+        // 1) tạo mật khẩu tạm thời an toàn
+        String tempPassword = generateSecurePassword(12);
+
+        // 2) mã hóa và lưu vào DB
+        String encoded = passwordEncoder.encode(tempPassword);
+        user.setPassword(encoded);
+
+//        // 3) mark user phải đổi mật khẩu khi đăng nhập
+//        user.setForceChangePassword(true);
+//
+//        // 4) set thời hạn mật khẩu tạm
+//        user.setTempPasswordExpiry(Instant.now().plus(tempPasswordExpiryHours, ChronoUnit.HOURS));
+
+        userRepository.save(user);
+
+        // 5) gửi email (plain-text tempPassword) — nếu bạn dùng HTML email, thay SimpleMailMessage bằng MimeMessage
+        sendTempPasswordEmail(user.getEmail(), user.getFullName(), tempPassword);
+
+        return true;
+    }
+    private String generateSecurePassword(int length) {
+        if (length < 8) length = 8;
+
+        final String upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        final String lower = "abcdefghijklmnopqrstuvwxyz";
+        final String digits = "0123456789";
+        final String specials = "!@#$%&*()-_=+[]{};:,.<>?";
+
+        final String all = upper + lower + digits + specials;
+
+        SecureRandom random = new SecureRandom();
+        StringBuilder sb = new StringBuilder(length);
+        sb.append(upper.charAt(random.nextInt(upper.length())));
+        sb.append(lower.charAt(random.nextInt(lower.length())));
+        sb.append(digits.charAt(random.nextInt(digits.length())));
+        sb.append(specials.charAt(random.nextInt(specials.length())));
+
+        for (int i = 4; i < length; i++) {
+            sb.append(all.charAt(random.nextInt(all.length())));
+        }
+        return shuffleString(sb.toString(), random);
+    }
+
+    private String shuffleString(String input, SecureRandom rnd) {
+        char[] a = input.toCharArray();
+        for (int i = a.length - 1; i > 0; i--) {
+            int j = rnd.nextInt(i + 1);
+            char tmp = a[i];
+            a[i] = a[j];
+            a[j] = tmp;
+        }
+        return new String(a);
     }
 }

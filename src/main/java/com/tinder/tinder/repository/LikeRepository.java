@@ -1,5 +1,6 @@
 package com.tinder.tinder.repository;
 
+import com.tinder.tinder.enums.StatusName;
 import com.tinder.tinder.model.Likes;
 import com.tinder.tinder.model.Users;
 import jakarta.transaction.Transactional;
@@ -24,4 +25,5 @@ public interface LikeRepository extends JpaRepository<Likes, Long> {
     Optional<Likes> findByFromUserAndToUser(Users fromUser, Users toUser);
 
     List<Likes> findAllByFromUser(Users fromUser);
+    List<Likes> findAllByToUserAndStatus(Users toUser, StatusName statusName);
 }

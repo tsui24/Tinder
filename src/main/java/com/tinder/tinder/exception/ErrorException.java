@@ -18,7 +18,9 @@ public enum ErrorException {
     NAME_INTEREST_EXISTS(111, "Tên sở thích đã tồn tại"),
     INTEREST_NOT_EXIST(112, "Tên sở thích không tồn tại"),
     MATCH_NOT_FOUND(113, "Match không tồn tại"),
-    USER_NOT_OF_MATCH(114,"Người dùng ko thuộc phiên tin nhắn này");
+    USER_NOT_OF_MATCH(114,"Người dùng ko thuộc phiên tin nhắn này"),
+    EMAIL_NOT_EXISTED(115, "Email này không tồn tại"),
+    EMAIL_NOT_TRUE(116,"Email Không trùng khớp với email bạn đã đăng kí");
     private int code;
     private String message;
 

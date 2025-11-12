@@ -1,12 +1,7 @@
 package com.tinder.tinder.controller;
 
-import com.tinder.tinder.dto.request.CreateInforUser;
-import com.tinder.tinder.dto.request.RegisterRequest;
-import com.tinder.tinder.dto.request.UpdateUserImagesDTO;
-import com.tinder.tinder.dto.request.UserUpdate;
-import com.tinder.tinder.dto.response.ApiResponse;
-import com.tinder.tinder.dto.response.UserMatchResult;
-import com.tinder.tinder.dto.response.UserSettingResponse;
+import com.tinder.tinder.dto.request.*;
+import com.tinder.tinder.dto.response.*;
 import com.tinder.tinder.jwt.JwtUtil;
 import com.tinder.tinder.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -81,9 +76,9 @@ public class UserController {
     }
 
     @PutMapping("update-password")
-    public ApiResponse<String> updatePassword(@RequestParam String oldPassword, String newPassword) {
+    public ApiResponse<String> updatePassword(@RequestBody ChangePassRequest request) {
         ApiResponse apiResponse = new ApiResponse();
-        userService.changePassword(oldPassword, newPassword);
+        userService.changePassword(request.getOldPassword(), request.getNewPassword());
         apiResponse.setMessage("Đổi mật khẩu thành công");
         apiResponse.setCode(200);
         apiResponse.setResult("");
@@ -99,8 +94,8 @@ public class UserController {
         return response;
     }
 
-    @PatchMapping("/update-user")
-    public ApiResponse<String> updateUser(@RequestBody UserUpdate request) {
+    @PutMapping("/update-user")
+    public ApiResponse<String> updateUser(@RequestBody @Valid UserUpdate request) {
         ApiResponse<String> apiResponse = new ApiResponse<>();
         userService.updateUser(request);
         apiResponse.setCode(200);
@@ -143,6 +138,42 @@ public class UserController {
         apiResponse.setCode(HttpStatus.OK.value());
         apiResponse.setMessage("Thành công");
         apiResponse.setResult(userService.updateUserSetting(request));
+        return apiResponse;
+    }
+
+    @GetMapping("/get-user-likes")
+    public ApiResponse<List<UserMatchResult>> getUserLikes() {
+        ApiResponse<List<UserMatchResult>> apiResponse = new ApiResponse<>();
+        apiResponse.setCode(HttpStatus.OK.value());
+        apiResponse.setMessage("Thanh cong");
+        apiResponse.setResult(userService.findAllUserLike());
+        return apiResponse;
+    }
+
+    @GetMapping("/get-profile")
+    public ApiResponse<ProfileResponse> getProfile(){
+        ApiResponse<ProfileResponse> apiResponse = new ApiResponse<>();
+        apiResponse.setResult(userService.getProfile());
+        apiResponse.setMessage("Thanh Cong");
+        apiResponse.setCode(HttpStatus.OK.value());
+        return apiResponse;
+    }
+
+    @GetMapping("get-user-management")
+    public ApiResponse<List<UserManagement>> getUserManagement(){
+        ApiResponse<List<UserManagement>> apiResponse = new ApiResponse<>();
+        apiResponse.setResult(userService.getUsersManagement());
+        apiResponse.setCode(200);
+        apiResponse.setMessage("Thanh Cong");
+        return apiResponse;
+    }
+
+    @GetMapping("get-infor-dashboard")
+    public ApiResponse<InforDashBoard> getInforDashBoard(){
+        ApiResponse<InforDashBoard> apiResponse = new ApiResponse<>();
+        apiResponse.setResult(userService.getInforDashBoard());
+        apiResponse.setCode(200);
+        apiResponse.setMessage("Thanh Cong");
         return apiResponse;
     }
 }

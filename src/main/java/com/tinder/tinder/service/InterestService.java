@@ -30,6 +30,7 @@ public class InterestService implements IInterestService {
         Interests exist = interestRepository.getByName(interestCreate.getName());
         if (exist == null) {
             newInterest.setName(interestCreate.getName().trim());
+            newInterest.setDescription(interestCreate.getDescription().trim());
             interestRepository.save(newInterest);
         } else {
             throw new AppException(ErrorException.NAME_INTEREST_EXISTS);
@@ -37,30 +38,33 @@ public class InterestService implements IInterestService {
     }
 
     @Override
-    public void updateInterest(Long id, String name) {
-
+    public void updateInterest(Long id, InterestCreate request) {
         Interests interest = interestRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorException.INTEREST_NOT_EXIST));
 
-        if (name == null || name.trim().isEmpty()) {
+        // Validate name
+        if (request.getName() == null || request.getName().trim().isEmpty()) {
             throw new AppException(ErrorException.INTEREST_NAME_NOT_BLANK);
         }
 
-        String trimmedName = name.trim();
+        String trimmedName = request.getName().trim();
 
-        if (trimmedName.equals(interest.getName())) {
-            return;
-        }
-
-        Interests exist = interestRepository.getByName(name);
-        if (exist == null) {
-            interest.setName(name.trim());
-            interestRepository.save(interest);
-        } else {
+        // Kiểm tra xem tên mới đã tồn tại trong DB chưa (ngoại trừ chính nó)
+        Interests existing = interestRepository.getByName(trimmedName);
+        if (existing != null && !existing.getId().equals(id)) {
             throw new AppException(ErrorException.NAME_INTEREST_EXISTS);
         }
+
+        // Cập nhật lại thông tin
+        interest.setName(trimmedName);
+        interest.setDescription(
+                request.getDescription() != null ? request.getDescription().trim() : null
+        );
+
+        // Lưu lại
         interestRepository.save(interest);
     }
+
 
     @Override
     public List<Interests> getAllInterests() {

@@ -64,10 +64,11 @@ public class ImagesService implements IImagesService {
 
         // Thêm ảnh mới (giữ nguyên logic của bạn)
         if (request.getNewImages() != null) {
-            for (UserImageDTO dto : request.getNewImages()) {
+            for (String dto : request.getNewImages()) {
                 Images image = new Images();
                 image.setUsers(user);
-                image.setUrl(dto.getSrc());
+                image.setStatus(1);
+                image.setUrl(dto);
                 imagesRepository.save(image);
             }
         }
