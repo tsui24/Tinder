@@ -30,10 +30,10 @@ public class InterestsController {
     }
 
 
-    @PutMapping("/update")
-    public ApiResponse<String> updateInterset(@RequestParam Long id, @RequestParam String name) {
+    @PutMapping("/{id}")
+    public ApiResponse<String> updateInterset(@PathVariable Long id,  @RequestBody InterestCreate request) {
         ApiResponse response = new ApiResponse();
-        interestService.updateInterest(id, name);
+        interestService.updateInterest(id, request);
         response.setMessage("Successfully update interest");
         response.setCode(HttpStatus.ACCEPTED.value());
         return response;

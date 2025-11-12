@@ -45,11 +45,12 @@ public class JwtFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         String requestURI = request.getRequestURI();
 
-        if (requestURI.equals("/api/auth/login") || requestURI.equals("/api/auth/register") ||
+        if (requestURI.equals("/api/auth/login") || requestURI.equals("/api/auth/register")
+                || requestURI.equals("/api/auth/forgot-password") ||
                 requestURI.startsWith("/ws") ||
                 requestURI.startsWith("/app") ||
                 requestURI.startsWith("/topic") ||
-                requestURI.startsWith("/sockjs")) {
+                requestURI.startsWith("/sockjs") || requestURI.startsWith("/test-ws")) {
             chain.doFilter(request, response);
             return;
         }

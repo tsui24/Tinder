@@ -1,13 +1,16 @@
 package com.tinder.tinder.dto.request;
 
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class InterestCreate {
-    private String name;
-    private String description;
+public class ChatMessageDTO {
+    private List<ChatMessage> messages;
+    private Integer numberOfQuestionDontSend;
 }

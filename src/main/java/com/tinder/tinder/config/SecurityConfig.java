@@ -47,13 +47,14 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/ws/**", "/ws").permitAll()
+                        .requestMatchers("/ws/**", "/ws", "/test-ws/**").permitAll()
                         .requestMatchers("/app/**", "/topic/**").permitAll()
-                        .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/forgot-password").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/interest/**").hasAnyRole("ADMIN", "USER")
                         .requestMatchers(HttpMethod.POST, "/api/interest/**").hasRole("ADMIN")
-                        .requestMatchers("/api/user/**","/api/like/**", "api/messages/**" ).hasRole("USER")
-
+                        .requestMatchers(HttpMethod.GET, "/api/user/get-user-management", "/api/user/get-infor-dashboard").hasRole("ADMIN")
+                        .requestMatchers("/api/user/**","/api/like/**", "/api/messages/**", "/api/matches/**",
+                                "/api/chat/**", "/api/images/**" ).hasRole("USER")
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex

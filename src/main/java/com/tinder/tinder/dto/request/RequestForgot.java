@@ -5,9 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class InterestCreate {
-    private String name;
-    private String description;
+@NoArgsConstructor
+public class RequestForgot {
+    private String email;
 }

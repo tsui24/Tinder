@@ -3,8 +3,7 @@ package com.tinder.tinder.service.impl;
 import com.tinder.tinder.dto.request.CreateInforUser;
 import com.tinder.tinder.dto.request.RegisterRequest;
 import com.tinder.tinder.dto.request.UserUpdate;
-import com.tinder.tinder.dto.response.UserMatchResult;
-import com.tinder.tinder.dto.response.UserSettingResponse;
+import com.tinder.tinder.dto.response.*;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
@@ -20,4 +19,8 @@ public interface IUserService {
     List<UserMatchResult> findMatches();
     UserSettingResponse getUserSetting();
     UserSettingResponse updateUserSetting(UserSettingResponse update);
+    List<UserMatchResult> findAllUserLike();
+    ProfileResponse getProfile();
+    List<UserManagement> getUsersManagement();
+    InforDashBoard getInforDashBoard();
 }

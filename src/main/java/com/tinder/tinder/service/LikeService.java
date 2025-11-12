@@ -1,5 +1,7 @@
 package com.tinder.tinder.service;
 
+import com.tinder.tinder.dto.request.LikeNotification;
+import com.tinder.tinder.dto.request.MatchNotification;
 import com.tinder.tinder.enums.StatusName;
 import com.tinder.tinder.exception.AppException;
 import com.tinder.tinder.exception.ErrorException;
@@ -12,6 +14,7 @@ import com.tinder.tinder.repository.UserRepository;
 import com.tinder.tinder.service.impl.ILikeService;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import com.tinder.tinder.utils.UtilsService;
 
@@ -24,12 +27,14 @@ public class LikeService implements ILikeService {
     private final UserRepository userRepository;
     private final LikeRepository likeRepository;
     private final MatchRepository matchRepository;
+    private final SimpMessagingTemplate messagingTemplate;
     public LikeService(UtilsService utilsService, UserRepository userRepository, LikeRepository likeRepository,
-                       MatchRepository matchRepository) {
+                       MatchRepository matchRepository, SimpMessagingTemplate messagingTemplate) {
         this.utilsService = utilsService;
         this.userRepository = userRepository;
         this.likeRepository = likeRepository;
         this.matchRepository = matchRepository;
+        this.messagingTemplate = messagingTemplate;
     }
 
     @Override
@@ -57,6 +62,16 @@ public class LikeService implements ILikeService {
             matches.setUser2(userTo);
             matches.setActive(true);
             matchRepository.save(matches);
+
+            MatchNotification matchNotification = new MatchNotification(
+                    userFrom.getId(), userFrom.getFullName(),
+                    userTo.getId(), userTo.getFullName(),
+                    "MATCH"
+            );
+            messagingTemplate.convertAndSend("/topic/match/" + userTo.getId().toString(), matchNotification);
+
+            messagingTemplate.convertAndSend("/topic/match/" + userFrom.getId().toString(), matchNotification);
+
             return;
         }
 
@@ -68,12 +83,20 @@ public class LikeService implements ILikeService {
 
         if (status == 0) {
             myAction.setStatus(StatusName.LIKE);
+            LikeNotification likeNotification = new LikeNotification(
+                    userFrom.getId(), userFrom.getFullName(),
+                    "LIKE"
+            );
+            log.info("CHUẨN BỊ GỬI MESSAGE TỚI USER: {}", userTo.getId().toString()); // <--- THÊM LOG NÀY
+            messagingTemplate.convertAndSend("/topic/like/" + userTo.getId().toString(), likeNotification);
+            log.info("ĐÃ GỬI MESSAGE.");
         } else if (status == 1) {
             myAction.setStatus(StatusName.DISLIKE);
         } else {
             myAction.setStatus(StatusName.SUPERLIKE);
         }
         likeRepository.save(myAction);
+
     }
 
 }

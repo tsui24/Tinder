@@ -1,6 +1,7 @@
 package com.tinder.tinder.controller;
 
 import com.tinder.tinder.dto.request.RegisterRequest;
+import com.tinder.tinder.dto.request.RequestForgot;
 import com.tinder.tinder.dto.request.UserLoginRequest;
 import com.tinder.tinder.dto.response.ApiResponse;
 import com.tinder.tinder.dto.response.AuthResponse;
@@ -16,6 +17,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("api/auth")
@@ -58,6 +61,16 @@ public class AuthController {
         response.setCode(200);
         response.setMessage("success");
         response.setResult("Create Success");
+        return response;
+    }
+
+    @PostMapping("/forgot-password")
+    public ApiResponse<String> forgotPassword(@RequestBody RequestForgot requestForgot) {
+        ApiResponse<String> response = new ApiResponse<>();
+        userService.forgotPassword(requestForgot.getEmail());
+        response.setCode(200);
+        response.setMessage("success");
+        response.setResult("Forgot Password Success");
         return response;
     }
 }

@@ -4,10 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class InterestCreate {
-    private String name;
-    private String description;
+@Data
+public class ChangePassRequest {
+    private String oldPassword;
+    private String newPassword;
 }

@@ -5,9 +5,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class InterestCreate {
-    private String name;
-    private String description;
+@NoArgsConstructor
+public class LikeNotification {
+    private Long fromUserId;
+    private String fromUsername;
+    private String type = "LIKE";
 }
